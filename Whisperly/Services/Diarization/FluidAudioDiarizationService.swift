@@ -8,24 +8,25 @@ final class FluidAudioDiarizationService: DiarizationServiceProtocol, @unchecked
         "007AFF", "FF9500", "34C759", "FF3B30", "AF52DE", "FF2D55"
     ]
 
+    private var manager: OfflineDiarizerManager?
+
     func diarize(
         audioURL: URL,
         segments: [TranscriptSegmentDTO]
     ) async throws -> ([TranscriptSegmentDTO], [SpeakerDTO]) {
         guard !segments.isEmpty else { return (segments, []) }
 
-        // Run FluidAudio offline diarization pipeline for best accuracy.
-        let diarizer = try await Diarizer()
-        let diarizationResult = try await diarizer.diarize(audioFile: audioURL)
+        let diarizer = try await getOrCreateManager()
+        let diarizationResult = try await diarizer.process(audioURL)
 
-        // Build speaker map: FluidAudio speaker index → our SpeakerDTO
-        var speakerMap: [Int: SpeakerDTO] = [:]
+        // Build speaker map: FluidAudio speakerId string → our SpeakerDTO
+        var speakerMap: [String: SpeakerDTO] = [:]
 
-        for label in diarizationResult.labels {
-            if speakerMap[label.speaker] == nil {
+        for timedSegment in diarizationResult.segments {
+            if speakerMap[timedSegment.speakerId] == nil {
                 let index = speakerMap.count
                 let colorHex = Self.speakerColors[index % Self.speakerColors.count]
-                speakerMap[label.speaker] = SpeakerDTO(
+                speakerMap[timedSegment.speakerId] = SpeakerDTO(
                     label: String(localized: "Speaker \(index + 1)"),
                     colorHex: colorHex
                 )
@@ -34,18 +35,16 @@ final class FluidAudioDiarizationService: DiarizationServiceProtocol, @unchecked
 
         // Assign speaker IDs to transcript segments by matching timestamps.
         let diarizedSegments = segments.map { segment -> TranscriptSegmentDTO in
-            let segmentMidpoint = (segment.startTime + segment.endTime) / 2.0
-
             // Find the diarization label that best overlaps with this segment.
-            let bestLabel = diarizationResult.labels.max(by: { a, b in
+            let bestMatch = diarizationResult.segments.max(by: { a, b in
                 overlapDuration(a, with: segment) < overlapDuration(b, with: segment)
             })
 
             let speakerID: UUID? = {
-                guard let label = bestLabel,
-                      overlapDuration(label, with: segment) > 0
+                guard let match = bestMatch,
+                      overlapDuration(match, with: segment) > 0
                 else { return nil }
-                return speakerMap[label.speaker]?.id
+                return speakerMap[match.speakerId]?.id
             }()
 
             return TranscriptSegmentDTO(
@@ -61,11 +60,23 @@ final class FluidAudioDiarizationService: DiarizationServiceProtocol, @unchecked
         return (diarizedSegments, Array(speakers))
     }
 
+    // MARK: - Manager
+
+    private func getOrCreateManager() async throws -> OfflineDiarizerManager {
+        if let existing = manager { return existing }
+
+        let mgr = OfflineDiarizerManager()
+        let models = try await OfflineDiarizerModels.load()
+        mgr.initialize(models: models)
+        manager = mgr
+        return mgr
+    }
+
     // MARK: - Helpers
 
-    private func overlapDuration(_ label: DiarizationLabel, with segment: TranscriptSegmentDTO) -> Double {
-        let overlapStart = max(label.start, segment.startTime)
-        let overlapEnd = min(label.end, segment.endTime)
+    private func overlapDuration(_ timedSeg: TimedSpeakerSegment, with segment: TranscriptSegmentDTO) -> Double {
+        let overlapStart = max(Double(timedSeg.startTimeSeconds), segment.startTime)
+        let overlapEnd = min(Double(timedSeg.endTimeSeconds), segment.endTime)
         return max(0, overlapEnd - overlapStart)
     }
 }
