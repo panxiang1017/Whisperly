@@ -3,10 +3,10 @@ import SwiftData
 
 @Model
 final class TranscriptSegment {
-    var id: UUID
-    var startTime: TimeInterval
-    var endTime: TimeInterval
-    var text: String
+    var id: UUID = UUID()
+    var startTime: TimeInterval = 0
+    var endTime: TimeInterval = 0
+    var text: String = ""
     var speakerID: UUID?
     var meeting: Meeting?
 

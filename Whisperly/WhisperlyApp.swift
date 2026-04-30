@@ -13,7 +13,22 @@ struct WhisperlyApp: App {
             Speaker.self,
             AppSettings.self,
         ])
-        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+
+        // Configure CloudKit sync based on user preference (default OFF).
+        let configuration: ModelConfiguration
+        if CloudKitSyncCoordinator.isSyncEnabled {
+            configuration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .private("iCloud.ai.dxy.Whisperly")
+            )
+        } else {
+            configuration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .none
+            )
+        }
 
         do {
             let container = try ModelContainer(for: schema, configurations: [configuration])

@@ -3,9 +3,9 @@ import SwiftData
 
 @Model
 final class Speaker {
-    var id: UUID
-    var label: String
-    var colorHex: String
+    var id: UUID = UUID()
+    var label: String = ""
+    var colorHex: String = "007AFF"
     var meeting: Meeting?
 
     init(

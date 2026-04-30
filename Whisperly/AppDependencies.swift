@@ -13,24 +13,28 @@ final class AppDependencies {
     let syncCoordinator: any SyncCoordinatorProtocol
     let exportService: any ExportServiceProtocol
     let storeManager: StoreManager
+    let modelManager: ModelManager
 
     init(
-        recorder: any RecordingServiceProtocol = MockRecordingService(),
-        transcriptionService: any TranscriptionServiceProtocol = MockTranscriptionService(),
-        diarizationService: any DiarizationServiceProtocol = MockDiarizationService(),
+        recorder: any RecordingServiceProtocol = AVAudioEngineRecordingService(),
+        transcriptionService: (any TranscriptionServiceProtocol)? = nil,
+        diarizationService: any DiarizationServiceProtocol = FluidAudioDiarizationService(),
         summarizationService: any SummarizationServiceProtocol = MockSummarizationService(),
         repository: any MeetingRepositoryProtocol,
-        searchService: any SearchServiceProtocol = StubSearchService(),
-        syncCoordinator: any SyncCoordinatorProtocol = StubSyncCoordinator(),
+        searchService: (any SearchServiceProtocol)? = nil,
+        syncCoordinator: any SyncCoordinatorProtocol = CloudKitSyncCoordinator(),
         exportService: any ExportServiceProtocol = ExportService(),
-        storeManager: StoreManager = StoreManager()
+        storeManager: StoreManager = StoreManager(),
+        modelManager: ModelManager = ModelManager()
     ) {
         self.recorder = recorder
+        self.modelManager = modelManager
         self.transcriptionService = transcriptionService
+            ?? WhisperKitTranscriptionService(modelManager: modelManager)
         self.diarizationService = diarizationService
         self.summarizationService = summarizationService
         self.repository = repository
-        self.searchService = searchService
+        self.searchService = searchService ?? (try? GRDBSearchService()) ?? StubSearchService()
         self.syncCoordinator = syncCoordinator
         self.exportService = exportService
         self.storeManager = storeManager
@@ -41,13 +45,15 @@ final class AppDependencies {
             transcriptionService: transcriptionService,
             diarizationService: diarizationService,
             summarizationService: summarizationService,
-            repository: repository
+            repository: repository,
+            searchService: searchService
         )
 
         return RecordingViewModel(
             recorder: recorder,
             entitlementProvider: storeManager,
-            pipeline: pipeline
+            pipeline: pipeline,
+            modelManager: modelManager
         )
     }
 }

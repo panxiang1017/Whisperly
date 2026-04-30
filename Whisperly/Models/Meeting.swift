@@ -3,21 +3,21 @@ import SwiftData
 
 @Model
 final class Meeting {
-    var id: UUID
-    var title: String
-    var createdAt: Date
-    var duration: TimeInterval
+    var id: UUID = UUID()
+    var title: String = ""
+    var createdAt: Date = Date()
+    var duration: TimeInterval = 0
     var audioFileURL: URL?
-    var summary: String
-    var keyPoints: [String]
-    var actionItems: [String]
-    var language: String
+    var summary: String = ""
+    var keyPoints: [String] = []
+    var actionItems: [String] = []
+    var language: String = "en"
 
     @Relationship(deleteRule: .cascade, inverse: \TranscriptSegment.meeting)
-    var segments: [TranscriptSegment]
+    var segments: [TranscriptSegment] = []
 
     @Relationship(deleteRule: .cascade, inverse: \Speaker.meeting)
-    var speakers: [Speaker]
+    var speakers: [Speaker] = []
 
     init(
         id: UUID = UUID(),

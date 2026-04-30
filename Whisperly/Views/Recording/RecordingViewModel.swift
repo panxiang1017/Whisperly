@@ -13,6 +13,7 @@ final class RecordingViewModel {
     private(set) var showCountdown = true
     private(set) var pipelineStage: PipelineStage?
     private(set) var isProcessing = false
+    var needsModelDownload = false
     var error: Error?
 
     var isCountdownUrgent: Bool {
@@ -32,6 +33,7 @@ final class RecordingViewModel {
     private let recorder: any RecordingServiceProtocol
     private let entitlementProvider: any EntitlementProviding
     private let pipeline: MeetingPipeline
+    let modelManager: ModelManager
 
     // MARK: - Tasks
 
@@ -41,17 +43,32 @@ final class RecordingViewModel {
     init(
         recorder: any RecordingServiceProtocol,
         entitlementProvider: any EntitlementProviding,
-        pipeline: MeetingPipeline
+        pipeline: MeetingPipeline,
+        modelManager: ModelManager = ModelManager(modelName: "mock", state: .ready)
     ) {
         self.recorder = recorder
         self.entitlementProvider = entitlementProvider
         self.pipeline = pipeline
+        self.modelManager = modelManager
     }
 
     // MARK: - Recording Control
 
     func startRecording() async {
+        // Check if the transcription model is downloaded.
+        if !modelManager.isReady {
+            needsModelDownload = true
+            return
+        }
+
         do {
+            // Configure system audio capture preference on macOS.
+            #if os(macOS)
+            if let avRecorder = recorder as? AVAudioEngineRecordingService {
+                avRecorder.captureSystemAudio = UserDefaults.standard.bool(forKey: "captureSystemAudio")
+            }
+            #endif
+
             try await recorder.start()
             isRecording = true
             elapsedSeconds = 0
@@ -94,6 +111,12 @@ final class RecordingViewModel {
             self.error = error
             return nil
         }
+    }
+
+    /// Called when the model download completes. Retries starting the recording.
+    func onModelReady() {
+        needsModelDownload = false
+        Task { await startRecording() }
     }
 
     // MARK: - Timers

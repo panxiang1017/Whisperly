@@ -3,9 +3,9 @@ import SwiftData
 
 @Model
 final class AppSettings {
-    var iCloudSyncEnabled: Bool
+    var iCloudSyncEnabled: Bool = false
     var preferredLanguage: String?
-    var summaryStyle: String
+    var summaryStyle: String = "concise"
 
     init(
         iCloudSyncEnabled: Bool = false,
