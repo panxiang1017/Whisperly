@@ -6,11 +6,13 @@ import CoreAudio
 
 final class AVAudioEngineRecordingService: RecordingServiceProtocol, @unchecked Sendable {
     private let engine = AVAudioEngine()
+    private let lock = NSLock()
     private var audioFile: AVAudioFile?
     private var outputURL: URL?
     private var _levelStream: AsyncStream<Float>?
     private var levelContinuation: AsyncStream<Float>.Continuation?
     private var _isRecording = false
+    private var writeErrors: [Error] = []
 
     /// When true on macOS, captures system audio via Core Audio Tap alongside the mic.
     var captureSystemAudio = false
@@ -21,20 +23,42 @@ final class AVAudioEngineRecordingService: RecordingServiceProtocol, @unchecked 
     private var systemAudioFile: AVAudioFile?
     #endif
 
-    var isRecording: Bool { _isRecording }
+    var isRecording: Bool {
+        lock.withLock { _isRecording }
+    }
 
     var levelStream: AsyncStream<Float> {
-        if let existing = _levelStream { return existing }
-        let (stream, continuation) = AsyncStream.makeStream(of: Float.self)
-        _levelStream = stream
-        levelContinuation = continuation
-        return stream
+        lock.withLock {
+            if let existing = _levelStream { return existing }
+            let (stream, continuation) = AsyncStream.makeStream(of: Float.self)
+            _levelStream = stream
+            levelContinuation = continuation
+            return stream
+        }
     }
 
     func start() async throws {
-        guard !_isRecording else { throw RecordingError.alreadyRecording }
+        try lock.withLock {
+            guard !_isRecording else { throw RecordingError.alreadyRecording }
+        }
 
         #if os(iOS)
+        // Check and request microphone permission before starting.
+        let permission = AVAudioApplication.shared.recordPermission
+        switch permission {
+        case .undetermined:
+            let granted = await AVAudioApplication.requestRecordPermission()
+            if !granted {
+                throw RecordingError.permissionDenied
+            }
+        case .denied:
+            throw RecordingError.permissionDenied
+        case .granted:
+            break
+        @unknown default:
+            break
+        }
+
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.record, mode: .measurement, options: [])
         try session.setActive(true)
@@ -67,16 +91,32 @@ final class AVAudioEngineRecordingService: RecordingServiceProtocol, @unchecked 
             AVEncoderBitRateKey: 64_000,
         ]
 
-        audioFile = try AVAudioFile(forWriting: url, settings: settings)
-        outputURL = url
+        let file = try AVAudioFile(forWriting: url, settings: settings)
 
-        // Ensure we have a fresh level stream
-        let (stream, continuation) = AsyncStream.makeStream(of: Float.self)
-        _levelStream = stream
-        levelContinuation = continuation
+        lock.withLock {
+            audioFile = file
+            outputURL = url
+            writeErrors = []
+            let (stream, continuation) = AsyncStream.makeStream(of: Float.self)
+            _levelStream = stream
+            levelContinuation = continuation
+        }
 
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
-            try? self?.audioFile?.write(from: buffer)
+            guard let self else { return }
+
+            self.lock.lock()
+            let currentFile = self.audioFile
+            let cont = self.levelContinuation
+            self.lock.unlock()
+
+            do {
+                try currentFile?.write(from: buffer)
+            } catch {
+                self.lock.lock()
+                self.writeErrors.append(error)
+                self.lock.unlock()
+            }
 
             guard let channelData = buffer.floatChannelData?[0] else { return }
             let frameLength = Int(buffer.frameLength)
@@ -88,7 +128,7 @@ final class AVAudioEngineRecordingService: RecordingServiceProtocol, @unchecked 
             }
             let rms = sqrt(sum / Float(frameLength))
             let normalizedLevel = min(1.0, rms * 5.0)
-            self?.levelContinuation?.yield(normalizedLevel)
+            cont?.yield(normalizedLevel)
         }
 
         #if os(macOS)
@@ -98,17 +138,29 @@ final class AVAudioEngineRecordingService: RecordingServiceProtocol, @unchecked 
         #endif
 
         try engine.start()
-        _isRecording = true
+
+        lock.withLock {
+            _isRecording = true
+        }
     }
 
     func stop() async throws -> URL {
-        guard _isRecording else { throw RecordingError.notRecording }
+        try lock.withLock {
+            guard _isRecording else { throw RecordingError.notRecording }
+        }
 
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
-        audioFile = nil
-        _isRecording = false
-        levelContinuation?.finish()
+
+        let (errors, url): ([Error], URL?) = lock.withLock {
+            audioFile = nil
+            _isRecording = false
+            levelContinuation?.finish()
+            let e = writeErrors
+            writeErrors = []
+            let u = outputURL
+            return (e, u)
+        }
 
         #if os(macOS)
         stopSystemAudioCapture()
@@ -118,7 +170,11 @@ final class AVAudioEngineRecordingService: RecordingServiceProtocol, @unchecked 
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         #endif
 
-        guard let url = outputURL else {
+        if let firstError = errors.first {
+            throw firstError
+        }
+
+        guard let url else {
             throw RecordingError.noOutputFile
         }
         return url

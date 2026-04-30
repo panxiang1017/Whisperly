@@ -34,22 +34,26 @@ final class RecordingViewModel {
     private let entitlementProvider: any EntitlementProviding
     private let pipeline: MeetingPipeline
     let modelManager: ModelManager
+    private let timeLimitSeconds: Int
 
     // MARK: - Tasks
 
     private var countdownTask: Task<Void, Never>?
     private var levelTask: Task<Void, Never>?
+    private var recordingStartDate: Date?
 
     init(
         recorder: any RecordingServiceProtocol,
         entitlementProvider: any EntitlementProviding,
         pipeline: MeetingPipeline,
-        modelManager: ModelManager = ModelManager(modelName: "mock", state: .ready)
+        modelManager: ModelManager = ModelManager(modelName: "mock", state: .ready),
+        timeLimitSeconds: Int = AppTheme.freeRecordingLimitSeconds
     ) {
         self.recorder = recorder
         self.entitlementProvider = entitlementProvider
         self.pipeline = pipeline
         self.modelManager = modelManager
+        self.timeLimitSeconds = timeLimitSeconds
     }
 
     // MARK: - Recording Control
@@ -71,8 +75,9 @@ final class RecordingViewModel {
 
             try await recorder.start()
             isRecording = true
+            recordingStartDate = Date()
             elapsedSeconds = 0
-            remainingSeconds = AppTheme.freeRecordingLimitSeconds
+            remainingSeconds = timeLimitSeconds
             showCountdown = !entitlementProvider.isPro
             error = nil
 
@@ -126,8 +131,10 @@ final class RecordingViewModel {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(1))
                 guard let self, self.isRecording else { return }
+                guard let startDate = self.recordingStartDate else { return }
 
-                self.elapsedSeconds += 1
+                let elapsed = Int(Date().timeIntervalSince(startDate))
+                self.elapsedSeconds = elapsed
 
                 if self.entitlementProvider.isPro {
                     if self.showCountdown {
@@ -138,7 +145,7 @@ final class RecordingViewModel {
                     continue
                 }
 
-                self.remainingSeconds -= 1
+                self.remainingSeconds = self.timeLimitSeconds - elapsed
 
                 if self.remainingSeconds <= 0 {
                     _ = await self.stopRecording()

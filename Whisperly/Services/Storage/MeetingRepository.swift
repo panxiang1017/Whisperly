@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 
+// TODO: Remove @MainActor when background ModelContext + DTO return types are implemented.
 @MainActor
 protocol MeetingRepositoryProtocol {
     func createMeeting(

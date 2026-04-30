@@ -22,13 +22,19 @@ struct CountdownTimerTests {
         let viewModel = RecordingViewModel(
             recorder: mockRecorder,
             entitlementProvider: mockEntitlement,
-            pipeline: pipeline
+            pipeline: pipeline,
+            timeLimitSeconds: 3
         )
 
         await viewModel.startRecording()
         #expect(viewModel.isRecording)
         #expect(viewModel.showCountdown)
-        #expect(viewModel.remainingSeconds == AppTheme.freeRecordingLimitSeconds)
+        #expect(viewModel.remainingSeconds == 3)
+
+        // Wait for countdown to reach zero (3 seconds + buffer for processing)
+        try await Task.sleep(for: .seconds(5))
+
+        #expect(!viewModel.isRecording, "Recording should stop when countdown reaches zero")
     }
 
     @Test("Pro upgrade mid-countdown removes timer without interrupting")

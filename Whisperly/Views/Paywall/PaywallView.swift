@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct PaywallView: View {
+    private static let privacyPolicyURL = URL(string: "https://panxiang1017.github.io/StaticPage/privacy-policy.html")
+    private static let termsOfUseURL = URL(string: "https://panxiang1017.github.io/StaticPage/terms-of-use.html")
+
     @Environment(StoreManager.self) private var store
     @Environment(\.dismiss) private var dismiss
 
@@ -114,10 +117,14 @@ struct PaywallView: View {
 
                 // Legal links
                 VStack(spacing: AppTheme.paddingS) {
-                    Link(String(localized: "Privacy Policy"), destination: URL(string: "https://panxiang1017.github.io/StaticPage/privacy-policy.html")!)
-                        .font(AppTheme.captionFont)
-                    Link(String(localized: "Terms of Use"), destination: URL(string: "https://panxiang1017.github.io/StaticPage/terms-of-use.html")!)
-                        .font(AppTheme.captionFont)
+                    if let url = Self.privacyPolicyURL {
+                        Link(String(localized: "Privacy Policy"), destination: url)
+                            .font(AppTheme.captionFont)
+                    }
+                    if let url = Self.termsOfUseURL {
+                        Link(String(localized: "Terms of Use"), destination: url)
+                            .font(AppTheme.captionFont)
+                    }
                 }
                 .padding(.bottom, AppTheme.paddingL)
             }

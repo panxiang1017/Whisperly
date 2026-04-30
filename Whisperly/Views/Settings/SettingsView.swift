@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct SettingsView: View {
+    private static let privacyPolicyURL = URL(string: "https://panxiang1017.github.io/StaticPage/privacy-policy.html")
+    private static let termsOfUseURL = URL(string: "https://panxiang1017.github.io/StaticPage/terms-of-use.html")
+
     @Environment(StoreManager.self) private var store
     @State private var showPaywall = false
     @State private var showRestartAlert = false
@@ -27,7 +30,7 @@ struct SettingsView: View {
                     }
                 }
             } header: {
-                Text(String(localized: "Subscription"))
+                Text(String(localized: "Pro Status"))
             }
 
             // iCloud Sync
@@ -83,12 +86,16 @@ struct SettingsView: View {
             Section {
                 LabeledContent(String(localized: "Version"), value: appVersion)
 
-                Link(destination: URL(string: "https://panxiang1017.github.io/StaticPage/privacy-policy.html")!) {
-                    Label(String(localized: "Privacy Policy"), systemImage: "hand.raised")
+                if let url = Self.privacyPolicyURL {
+                    Link(destination: url) {
+                        Label(String(localized: "Privacy Policy"), systemImage: "hand.raised")
+                    }
                 }
 
-                Link(destination: URL(string: "https://panxiang1017.github.io/StaticPage/terms-of-use.html")!) {
-                    Label(String(localized: "Terms of Use"), systemImage: "doc.text")
+                if let url = Self.termsOfUseURL {
+                    Link(destination: url) {
+                        Label(String(localized: "Terms of Use"), systemImage: "doc.text")
+                    }
                 }
             } header: {
                 Text(String(localized: "About"))

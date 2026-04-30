@@ -11,7 +11,6 @@ struct WhisperlyApp: App {
             Meeting.self,
             TranscriptSegment.self,
             Speaker.self,
-            AppSettings.self,
         ])
 
         // Configure CloudKit sync based on user preference (default OFF).

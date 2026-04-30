@@ -9,7 +9,6 @@ enum TestHelpers {
             Meeting.self,
             TranscriptSegment.self,
             Speaker.self,
-            AppSettings.self,
         ])
         let configuration = ModelConfiguration(
             schema: schema,

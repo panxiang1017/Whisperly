@@ -60,6 +60,7 @@ final class ExportService: ExportServiceProtocol, Sendable {
         lines.append("")
 
         let formatter = DateFormatter()
+        formatter.locale = Locale.current
         formatter.dateStyle = .long
         formatter.timeStyle = .short
         lines.append("**\(String(localized: "Date")):** \(formatter.string(from: meeting.createdAt))")
@@ -112,6 +113,7 @@ final class ExportService: ExportServiceProtocol, Sendable {
         lines.append("")
 
         let formatter = DateFormatter()
+        formatter.locale = Locale.current
         formatter.dateStyle = .long
         formatter.timeStyle = .short
         lines.append("\(String(localized: "Date")): \(formatter.string(from: meeting.createdAt))")

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MeetingDetailView: View {
     let meeting: Meeting
+    var exportService: any ExportServiceProtocol = ExportService()
     @State private var selectedTab: DetailTab = .transcript
 
     var body: some View {
@@ -159,7 +160,7 @@ struct MeetingDetailView: View {
     // MARK: - Export
 
     private var exportedText: String {
-        let exporter = ExportService()
+        let exporter = exportService
         let exportable = ExportableMeeting(
             title: meeting.title,
             createdAt: meeting.createdAt,
