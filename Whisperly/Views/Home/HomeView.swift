@@ -7,11 +7,20 @@ struct HomeView: View {
     @State private var showRecording = false
     @State private var selectedMeeting: Meeting?
     @State private var showPaywall = false
+    @State private var searchText = ""
+    @State private var searchResultIDs: Set<UUID>?
+    @State private var searchTask: Task<Void, Never>?
 
     private let dependencies: AppDependencies
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
+    }
+
+    /// Meetings filtered by the current FTS5 search query.
+    private var filteredMeetings: [Meeting] {
+        guard let ids = searchResultIDs else { return meetings }
+        return meetings.filter { ids.contains($0.id) }
     }
 
     var body: some View {
@@ -23,11 +32,24 @@ struct HomeView: View {
                         title: String(localized: "No meetings yet"),
                         message: String(localized: "Tap the record button to start your first meeting.")
                     )
+                } else if !searchText.isEmpty && filteredMeetings.isEmpty {
+                    EmptyStateView(
+                        systemImage: "magnifyingglass",
+                        title: String(localized: "No results"),
+                        message: String(localized: "No meetings matched your search.")
+                    )
                 } else {
                     meetingList
                 }
             }
             .navigationTitle(String(localized: "Whisperly"))
+            .searchable(
+                text: $searchText,
+                prompt: String(localized: "Search meetings")
+            )
+            .onChange(of: searchText) { _, newValue in
+                debounceSearch(newValue)
+            }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     recordButton
@@ -35,7 +57,7 @@ struct HomeView: View {
                 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink {
-                        SettingsView()
+                        SettingsView(modelManager: dependencies.modelManager)
                     } label: {
                         Label(String(localized: "Settings"), systemImage: "gearshape")
                     }
@@ -43,7 +65,7 @@ struct HomeView: View {
                 #else
                 ToolbarItem {
                     NavigationLink {
-                        SettingsView()
+                        SettingsView(modelManager: dependencies.modelManager)
                     } label: {
                         Label(String(localized: "Settings"), systemImage: "gearshape")
                     }
@@ -78,7 +100,7 @@ struct HomeView: View {
 
     private var meetingList: some View {
         List {
-            ForEach(meetings) { meeting in
+            ForEach(filteredMeetings) { meeting in
                 Button {
                     selectedMeeting = meeting
                 } label: {
@@ -101,10 +123,33 @@ struct HomeView: View {
         }
     }
 
+    // MARK: - Search
+
+    private func debounceSearch(_ query: String) {
+        searchTask?.cancel()
+
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            searchResultIDs = nil
+            return
+        }
+
+        searchTask = Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+
+            if let ids = try? await dependencies.searchService.search(query: trimmed) {
+                searchResultIDs = Set(ids)
+            }
+        }
+    }
+
+    // MARK: - Actions
+
     private func deleteMeetings(at offsets: IndexSet) {
         Task {
-            for index in offsets {
-                let meeting = meetings[index]
+            let meetingsToDelete = offsets.map { filteredMeetings[$0] }
+            for meeting in meetingsToDelete {
                 try? await dependencies.repository.delete(meeting)
             }
         }

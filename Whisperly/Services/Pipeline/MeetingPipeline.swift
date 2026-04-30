@@ -20,7 +20,7 @@ enum PipelineError: Error, LocalizedError {
     }
 }
 
-enum PipelineStage: Sendable {
+enum PipelineStage: Sendable, Equatable {
     case transcribing
     case diarizing
     case summarizing
@@ -34,6 +34,7 @@ final class MeetingPipeline {
     private let diarizationService: any DiarizationServiceProtocol
     private let summarizationService: any SummarizationServiceProtocol
     private let repository: any MeetingRepositoryProtocol
+    private let searchService: any SearchServiceProtocol
 
     var onStageChanged: ((PipelineStage) -> Void)?
 
@@ -41,12 +42,14 @@ final class MeetingPipeline {
         transcriptionService: any TranscriptionServiceProtocol,
         diarizationService: any DiarizationServiceProtocol,
         summarizationService: any SummarizationServiceProtocol,
-        repository: any MeetingRepositoryProtocol
+        repository: any MeetingRepositoryProtocol,
+        searchService: any SearchServiceProtocol = StubSearchService()
     ) {
         self.transcriptionService = transcriptionService
         self.diarizationService = diarizationService
         self.summarizationService = summarizationService
         self.repository = repository
+        self.searchService = searchService
     }
 
     func process(
@@ -96,6 +99,13 @@ final class MeetingPipeline {
             throw PipelineError.saveFailed(error)
         }
 
+        // Index the meeting text for full-text search.
+        let searchableText = buildSearchableText(
+            segments: diarizedSegments,
+            summary: summary
+        )
+        try? await searchService.indexMeeting(id: meeting.id, text: searchableText)
+
         onStageChanged?(.completed)
         return meeting
     }
@@ -115,5 +125,19 @@ final class MeetingPipeline {
             return "\(preview)..."
         }
         return preview
+    }
+
+    private func buildSearchableText(
+        segments: [TranscriptSegmentDTO],
+        summary: MeetingSummaryDTO
+    ) -> String {
+        var parts: [String] = []
+        parts.append(contentsOf: segments.map(\.text))
+        if !summary.summary.isEmpty {
+            parts.append(summary.summary)
+        }
+        parts.append(contentsOf: summary.keyPoints)
+        parts.append(contentsOf: summary.actionItems)
+        return parts.joined(separator: " ")
     }
 }
