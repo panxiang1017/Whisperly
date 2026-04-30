@@ -12,6 +12,8 @@ final class Meeting {
     var keyPoints: [String] = []
     var actionItems: [String] = []
     var language: String = "en"
+    var summaryEngine: String = "mock"
+    var actionItemCompletions: [Bool] = []
 
     @Relationship(deleteRule: .cascade, inverse: \TranscriptSegment.meeting)
     var segments: [TranscriptSegment] = []
@@ -29,6 +31,8 @@ final class Meeting {
         keyPoints: [String] = [],
         actionItems: [String] = [],
         language: String = "en",
+        summaryEngine: String = "mock",
+        actionItemCompletions: [Bool] = [],
         segments: [TranscriptSegment] = [],
         speakers: [Speaker] = []
     ) {
@@ -41,6 +45,8 @@ final class Meeting {
         self.keyPoints = keyPoints
         self.actionItems = actionItems
         self.language = language
+        self.summaryEngine = summaryEngine
+        self.actionItemCompletions = actionItemCompletions
         self.segments = segments
         self.speakers = speakers
     }

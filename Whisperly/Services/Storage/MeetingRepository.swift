@@ -18,6 +18,8 @@ protocol MeetingRepositoryProtocol {
     func fetch(id: UUID) async throws -> Meeting?
     func delete(_ meeting: Meeting) async throws
     func updateTitle(_ meeting: Meeting, title: String) async throws
+    func updateSummary(_ meeting: Meeting, summary: MeetingSummaryDTO) async throws
+    func toggleActionItem(_ meeting: Meeting, index: Int) async throws
 }
 
 @MainActor
@@ -44,7 +46,9 @@ final class SwiftDataMeetingRepository: MeetingRepositoryProtocol {
             summary: summary.summary,
             keyPoints: summary.keyPoints,
             actionItems: summary.actionItems,
-            language: language
+            language: language,
+            summaryEngine: summary.engineType.rawValue,
+            actionItemCompletions: Array(repeating: false, count: summary.actionItems.count)
         )
 
         let speakerModels = speakers.map { dto in
@@ -92,6 +96,21 @@ final class SwiftDataMeetingRepository: MeetingRepositoryProtocol {
 
     func updateTitle(_ meeting: Meeting, title: String) async throws {
         meeting.title = title
+        try modelContext.save()
+    }
+
+    func updateSummary(_ meeting: Meeting, summary: MeetingSummaryDTO) async throws {
+        meeting.summary = summary.summary
+        meeting.keyPoints = summary.keyPoints
+        meeting.actionItems = summary.actionItems
+        meeting.summaryEngine = summary.engineType.rawValue
+        meeting.actionItemCompletions = Array(repeating: false, count: summary.actionItems.count)
+        try modelContext.save()
+    }
+
+    func toggleActionItem(_ meeting: Meeting, index: Int) async throws {
+        guard index >= 0 && index < meeting.actionItemCompletions.count else { return }
+        meeting.actionItemCompletions[index].toggle()
         try modelContext.save()
     }
 }

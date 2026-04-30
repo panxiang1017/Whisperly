@@ -19,7 +19,7 @@ final class AppDependencies {
         recorder: any RecordingServiceProtocol = AVAudioEngineRecordingService(),
         transcriptionService: (any TranscriptionServiceProtocol)? = nil,
         diarizationService: any DiarizationServiceProtocol = FluidAudioDiarizationService(),
-        summarizationService: any SummarizationServiceProtocol = MockSummarizationService(),
+        summarizationService: any SummarizationServiceProtocol = SummarizationEngine(),
         repository: any MeetingRepositoryProtocol,
         searchService: (any SearchServiceProtocol)? = nil,
         syncCoordinator: any SyncCoordinatorProtocol = CloudKitSyncCoordinator(),

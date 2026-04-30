@@ -15,6 +15,8 @@ final class ModelManager {
 
     private(set) var whisperModelState: ModelState = .notDownloaded
     private(set) var whisperModelName: String = ""
+    private(set) var mlxModelState: ModelState = .notDownloaded
+    let mlxModelName: String = "Qwen2.5-3B-Instruct-4bit"
 
     private let fileManager = FileManager.default
     private var downloadTask: Task<Void, Never>?
@@ -32,12 +34,14 @@ final class ModelManager {
         let recommended = Self.recommendedModelName()
         whisperModelName = recommended
         whisperModelState = Self.isModelDownloaded(recommended) ? .ready : .notDownloaded
+        mlxModelState = Self.isMLXModelDownloaded() ? .ready : .notDownloaded
     }
 
     /// Test-only initializer that skips model detection.
     init(modelName: String, state: ModelState) {
         self.whisperModelName = modelName
         self.whisperModelState = state
+        self.mlxModelState = .notDownloaded
     }
 
     // MARK: - Model Readiness
@@ -129,5 +133,34 @@ final class ModelManager {
 
     var modelFolderURL: URL {
         Self.modelsBaseURL.appendingPathComponent(whisperModelName, isDirectory: true)
+    }
+
+    // MARK: - MLX Model Management
+
+    nonisolated static var mlxModelsBaseURL: URL {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        return appSupport.appendingPathComponent("Whisperly/MLXModels", isDirectory: true)
+    }
+
+    nonisolated static func isMLXModelDownloaded() -> Bool {
+        #if canImport(MLXLLM)
+        return MLXSummarizationService.isModelCached
+        #else
+        return MLXSummarizationServiceStub.isModelCached
+        #endif
+    }
+
+    nonisolated static var estimatedMLXModelSize: String { "~1.8 GB" }
+
+    func deleteMLXModel() throws {
+        let modelDir = Self.mlxModelsBaseURL
+        if fileManager.fileExists(atPath: modelDir.path) {
+            try fileManager.removeItem(at: modelDir)
+        }
+        mlxModelState = .notDownloaded
+    }
+
+    func refreshMLXState() {
+        mlxModelState = Self.isMLXModelDownloaded() ? .ready : .notDownloaded
     }
 }

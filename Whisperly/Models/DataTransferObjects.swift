@@ -1,5 +1,12 @@
 import Foundation
 
+enum SummarizationEngineType: String, Codable, Sendable {
+    case appleFoundationModels
+    case mlx
+    case extractive
+    case mock
+}
+
 struct TranscriptSegmentDTO: Sendable, Equatable {
     let id: UUID
     let startTime: TimeInterval
@@ -42,4 +49,17 @@ struct MeetingSummaryDTO: Sendable, Equatable {
     let summary: String
     let keyPoints: [String]
     let actionItems: [String]
+    let engineType: SummarizationEngineType
+
+    init(
+        summary: String,
+        keyPoints: [String],
+        actionItems: [String],
+        engineType: SummarizationEngineType = .mock
+    ) {
+        self.summary = summary
+        self.keyPoints = keyPoints
+        self.actionItems = actionItems
+        self.engineType = engineType
+    }
 }
