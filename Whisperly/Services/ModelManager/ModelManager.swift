@@ -21,7 +21,7 @@ final class ModelManager {
 
     // MARK: - Storage Paths
 
-    static var modelsBaseURL: URL {
+    nonisolated static var modelsBaseURL: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         return appSupport.appendingPathComponent("WhisperKit/Models", isDirectory: true)
     }
@@ -48,7 +48,7 @@ final class ModelManager {
 
     // MARK: - Device-Specific Model
 
-    static func recommendedModelName() -> String {
+    nonisolated static func recommendedModelName() -> String {
         let totalMemory = ProcessInfo.processInfo.physicalMemory
         let memoryGB = Double(totalMemory) / (1024 * 1024 * 1024)
 
@@ -59,14 +59,14 @@ final class ModelManager {
         }
     }
 
-    static func estimatedModelSize(for model: String) -> String {
+    nonisolated static func estimatedModelSize(for model: String) -> String {
         switch model {
         case "large-v3-turbo": "~626 MB"
         case "large-v3": "~1.5 GB"
         case "small": "~244 MB"
         case "base": "~74 MB"
         case "tiny": "~39 MB"
-        default: String(localized: "Unknown size")
+        default: "Unknown size"
         }
     }
 
@@ -83,7 +83,7 @@ final class ModelManager {
 
                 _ = try await WhisperKit.download(
                     variant: whisperModelName,
-                    downloadBase: modelsDir.path
+                    downloadBase: modelsDir
                 )
 
                 whisperModelState = .ready
@@ -122,7 +122,7 @@ final class ModelManager {
 
     // MARK: - Helpers
 
-    static func isModelDownloaded(_ model: String) -> Bool {
+    nonisolated static func isModelDownloaded(_ model: String) -> Bool {
         let modelDir = modelsBaseURL.appendingPathComponent(model, isDirectory: true)
         return FileManager.default.fileExists(atPath: modelDir.path)
     }

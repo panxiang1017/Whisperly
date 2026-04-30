@@ -1,7 +1,7 @@
 import Foundation
 import WhisperKit
 
-/// Real transcription service powered by WhisperKit (argmax-oss-swift).
+/// Real transcription service powered by WhisperKit (argmaxinc/WhisperKit).
 /// Downloads and caches models on-device; runs entirely on ANE/GPU.
 final class WhisperKitTranscriptionService: TranscriptionServiceProtocol, @unchecked Sendable {
     private var whisperKit: WhisperKit?
@@ -15,19 +15,18 @@ final class WhisperKitTranscriptionService: TranscriptionServiceProtocol, @unche
     func transcribe(audioURL: URL, language: String?) async throws -> [TranscriptSegmentDTO] {
         let pipe = try await getOrCreatePipeline()
 
-        var options = DecodingOptions(
-            task: .transcribe,
-            usePrefillPrompt: true,
-            withoutTimestamps: false
-        )
+        var options = DecodingOptions(task: .transcribe)
         if let language {
             options.language = language
         }
 
-        let results = try await pipe.transcribe(audioPath: audioURL.path, decodeOptions: options)
+        let results: [TranscriptionResult] = try await pipe.transcribe(
+            audioPath: audioURL.path,
+            decodeOptions: options
+        )
 
         return results.flatMap { result in
-            (result.segments ?? []).map { segment in
+            result.segments.map { segment in
                 TranscriptSegmentDTO(
                     startTime: TimeInterval(segment.start),
                     endTime: TimeInterval(segment.end),
@@ -44,15 +43,13 @@ final class WhisperKitTranscriptionService: TranscriptionServiceProtocol, @unche
 
         let modelFolder = await modelManager.modelFolderURL.path
 
-        let config = WhisperKitConfig(
-            model: await modelManager.whisperModelName,
+        let pipe = try await WhisperKit(
             modelFolder: modelFolder,
             verbose: false,
             logLevel: .none,
             prewarm: true,
             load: true
         )
-        let pipe = try await WhisperKit(config)
         whisperKit = pipe
         return pipe
     }
