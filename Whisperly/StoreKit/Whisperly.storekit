@@ -1,0 +1,89 @@
+{
+  "identifier" : "F3A1B2C4-D5E6-7890-ABCD-EF1234567890",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "69.99",
+      "familyShareable" : true,
+      "internalID" : "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+      "localizations" : [
+        {
+          "description" : "Unlimited recording time. All future updates included.",
+          "displayName" : "Whisperly Lifetime Pro",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "无限录音时长，包含所有未来更新。",
+          "displayName" : "Whisperly 终身专业版",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "ai.dxy.whisperly.lifetime",
+      "referenceName" : "Lifetime Pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "1234567890",
+    "_developerTeamID" : "D8F9APCM27",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Transaction Manager"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
