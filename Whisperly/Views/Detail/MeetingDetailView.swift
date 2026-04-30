@@ -3,11 +3,14 @@ import SwiftUI
 struct MeetingDetailView: View {
     let meeting: Meeting
     var exportService: any ExportServiceProtocol = ExportService()
+    var summarizationService: (any SummarizationServiceProtocol)?
+    var repository: (any MeetingRepositoryProtocol)?
     @State private var selectedTab: DetailTab = .transcript
+    @State private var isRegenerating = false
+    @State private var regenerateError: String?
 
     var body: some View {
         VStack(spacing: 0) {
-            // Tab picker
             Picker(String(localized: "View"), selection: $selectedTab) {
                 ForEach(DetailTab.allCases) { tab in
                     Text(tab.label).tag(tab)
@@ -17,7 +20,6 @@ struct MeetingDetailView: View {
             .padding(.horizontal, AppTheme.paddingM)
             .padding(.vertical, AppTheme.paddingS)
 
-            // Tab content
             switch selectedTab {
             case .transcript:
                 transcriptView
@@ -69,6 +71,34 @@ struct MeetingDetailView: View {
     private var summaryView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.paddingL) {
+                // Engine badge + regenerate
+                HStack {
+                    EngineBadge(engine: meeting.summaryEngine)
+                    Spacer()
+                    if summarizationService != nil && repository != nil {
+                        Button {
+                            Task { await regenerateSummary() }
+                        } label: {
+                            if isRegenerating {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Label(String(localized: "Regenerate"), systemImage: "arrow.clockwise")
+                                    .font(AppTheme.captionFont)
+                            }
+                        }
+                        .disabled(isRegenerating)
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                    }
+                }
+
+                if let error = regenerateError {
+                    Text(error)
+                        .font(AppTheme.captionFont)
+                        .foregroundStyle(AppTheme.destructive)
+                }
+
                 if !meeting.summary.isEmpty {
                     SummarySection(
                         title: String(localized: "Summary"),
@@ -96,9 +126,18 @@ struct MeetingDetailView: View {
                         title: String(localized: "Action Items"),
                         systemImage: "checklist"
                     ) {
-                        ForEach(meeting.actionItems, id: \.self) { item in
-                            Label(item, systemImage: "circle")
-                                .font(AppTheme.bodyFont)
+                        ForEach(Array(meeting.actionItems.enumerated()), id: \.offset) { index, item in
+                            ActionItemRow(
+                                item: item,
+                                isCompleted: index < meeting.actionItemCompletions.count
+                                    ? meeting.actionItemCompletions[index]
+                                    : false,
+                                onToggle: {
+                                    Task {
+                                        try? await repository?.toggleActionItem(meeting, index: index)
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -157,6 +196,27 @@ struct MeetingDetailView: View {
         }
     }
 
+    // MARK: - Regenerate Summary
+
+    private func regenerateSummary() async {
+        guard let service = summarizationService, let repo = repository else { return }
+        isRegenerating = true
+        regenerateError = nil
+
+        do {
+            let segmentDTOs = meeting.segments
+                .sorted { $0.startTime < $1.startTime }
+                .map { TranscriptSegmentDTO(id: $0.id, startTime: $0.startTime, endTime: $0.endTime, text: $0.text, speakerID: $0.speakerID) }
+
+            let newSummary = try await service.summarize(transcript: segmentDTOs)
+            try await repo.updateSummary(meeting, summary: newSummary)
+        } catch {
+            regenerateError = error.localizedDescription
+        }
+
+        isRegenerating = false
+    }
+
     // MARK: - Export
 
     private var exportedText: String {
@@ -193,6 +253,90 @@ enum DetailTab: String, CaseIterable, Identifiable {
         case .transcript: String(localized: "Transcript")
         case .summary: String(localized: "Summary")
         case .speakers: String(localized: "Speakers")
+        }
+    }
+}
+
+// MARK: - Action Item Row
+
+struct ActionItemRow: View {
+    let item: String
+    let isCompleted: Bool
+    let onToggle: () -> Void
+
+    var body: some View {
+        Button(action: onToggle) {
+            HStack(alignment: .top, spacing: AppTheme.paddingS) {
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isCompleted ? .green : AppTheme.secondaryText)
+                    .font(.title3)
+
+                Text(item)
+                    .font(AppTheme.bodyFont)
+                    .strikethrough(isCompleted)
+                    .foregroundStyle(isCompleted ? AppTheme.secondaryText : AppTheme.primaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Engine Badge
+
+struct EngineBadge: View {
+    let engine: String
+
+    var body: some View {
+        HStack(spacing: AppTheme.paddingXS) {
+            Image(systemName: iconName)
+                .font(.caption2)
+            Text(displayName)
+                .font(AppTheme.captionFont)
+        }
+        .padding(.horizontal, AppTheme.paddingS)
+        .padding(.vertical, AppTheme.paddingXS)
+        .background(badgeColor.opacity(0.15))
+        .foregroundStyle(badgeColor)
+        .clipShape(Capsule())
+    }
+
+    private var displayName: String {
+        switch engine {
+        case SummarizationEngineType.appleFoundationModels.rawValue:
+            String(localized: "Apple AI")
+        case SummarizationEngineType.mlx.rawValue:
+            String(localized: "MLX Qwen")
+        case SummarizationEngineType.extractive.rawValue:
+            String(localized: "Basic Summary")
+        default:
+            String(localized: "Mock")
+        }
+    }
+
+    private var iconName: String {
+        switch engine {
+        case SummarizationEngineType.appleFoundationModels.rawValue:
+            "apple.logo"
+        case SummarizationEngineType.mlx.rawValue:
+            "cpu"
+        case SummarizationEngineType.extractive.rawValue:
+            "text.magnifyingglass"
+        default:
+            "sparkles"
+        }
+    }
+
+    private var badgeColor: Color {
+        switch engine {
+        case SummarizationEngineType.appleFoundationModels.rawValue:
+            .blue
+        case SummarizationEngineType.mlx.rawValue:
+            .purple
+        case SummarizationEngineType.extractive.rawValue:
+            .orange
+        default:
+            AppTheme.secondaryText
         }
     }
 }

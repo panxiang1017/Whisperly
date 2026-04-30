@@ -33,6 +33,9 @@ struct SettingsView: View {
                 Text(String(localized: "Pro Status"))
             }
 
+            // Summarization engine
+            SummarizationEngineSection()
+
             // iCloud Sync
             Section {
                 Toggle(isOn: Binding(
@@ -61,7 +64,6 @@ struct SettingsView: View {
             }
 
             #if os(macOS)
-            // System audio capture (macOS only)
             Section {
                 Toggle(isOn: Binding(
                     get: { UserDefaults.standard.bool(forKey: "captureSystemAudio") },
@@ -81,6 +83,9 @@ struct SettingsView: View {
 
             // Model management
             ModelManagementSection(modelManager: modelManager)
+
+            // MLX model management
+            MLXModelManagementSection(modelManager: modelManager)
 
             // About
             Section {
@@ -127,5 +132,82 @@ struct SettingsView: View {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
         return "\(version) (\(build))"
+    }
+}
+
+// MARK: - Summarization Engine Section
+
+struct SummarizationEngineSection: View {
+    var body: some View {
+        Section {
+            LabeledContent(String(localized: "Active Engine"), value: SummarizationEngine.currentEngineName)
+
+            VStack(alignment: .leading, spacing: AppTheme.paddingXS) {
+                Text(String(localized: "Whisperly automatically uses the best available summarization engine for your device."))
+                    .font(AppTheme.captionFont)
+                    .foregroundStyle(AppTheme.secondaryText)
+
+                if !SummarizationEngine.isAppleFoundationModelsAvailable && !SummarizationEngine.isMLXAvailable {
+                    Text(String(localized: "Download the MLX model below for AI-powered summaries, or upgrade to a device with Apple Intelligence."))
+                        .font(AppTheme.captionFont)
+                        .foregroundStyle(.orange)
+                }
+            }
+        } header: {
+            Text(String(localized: "Summarization"))
+        }
+    }
+}
+
+// MARK: - MLX Model Management Section
+
+struct MLXModelManagementSection: View {
+    @Bindable var modelManager: ModelManager
+
+    var body: some View {
+        Section {
+            LabeledContent(String(localized: "Model"), value: modelManager.mlxModelName)
+            LabeledContent(String(localized: "Size"), value: ModelManager.estimatedMLXModelSize)
+
+            switch modelManager.mlxModelState {
+            case .ready:
+                LabeledContent(
+                    String(localized: "Status"),
+                    value: String(localized: "Downloaded")
+                )
+
+                Button(role: .destructive) {
+                    try? modelManager.deleteMLXModel()
+                } label: {
+                    Label(String(localized: "Delete Model"), systemImage: "trash")
+                }
+
+            case .notDownloaded:
+                VStack(alignment: .leading, spacing: AppTheme.paddingXS) {
+                    Text(String(localized: "Not downloaded"))
+                        .font(AppTheme.captionFont)
+                        .foregroundStyle(AppTheme.secondaryText)
+
+                    Text(String(localized: "The MLX summarization model will be downloaded automatically when first needed, or you can pre-download it here."))
+                        .font(AppTheme.captionFont)
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
+
+            case .downloading(let progress):
+                HStack {
+                    ProgressView(value: progress, total: 1.0)
+                    Text("\(Int(progress * 100))%")
+                        .font(AppTheme.captionFont)
+                        .monospacedDigit()
+                }
+
+            case .failed(let message):
+                Label(message, systemImage: "exclamationmark.triangle")
+                    .font(AppTheme.captionFont)
+                    .foregroundStyle(AppTheme.destructive)
+            }
+        } header: {
+            Text(String(localized: "Summarization Model (MLX)"))
+        }
     }
 }

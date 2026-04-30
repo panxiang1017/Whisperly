@@ -91,7 +91,12 @@ struct HomeView: View {
                 #endif
             }
             .navigationDestination(item: $selectedMeeting) { meeting in
-                MeetingDetailView(meeting: meeting, exportService: dependencies.exportService)
+                MeetingDetailView(
+                    meeting: meeting,
+                    exportService: dependencies.exportService,
+                    summarizationService: dependencies.summarizationService,
+                    repository: dependencies.repository
+                )
             }
         }
     }
