@@ -34,8 +34,15 @@ struct WhisperlyApp: App {
             self.modelContainer = container
             let repository = SwiftDataMeetingRepository(modelContext: container.mainContext)
             self._dependencies = State(initialValue: AppDependencies(repository: repository))
+            print("[Whisperly] ModelContainer created successfully")
         } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
+            print("[Whisperly] ModelContainer FAILED: \(error)")
+            // Fallback: create without CloudKit
+            let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .none)
+            let container = try! ModelContainer(for: schema, configurations: [fallback])
+            self.modelContainer = container
+            let repository = SwiftDataMeetingRepository(modelContext: container.mainContext)
+            self._dependencies = State(initialValue: AppDependencies(repository: repository))
         }
     }
 
