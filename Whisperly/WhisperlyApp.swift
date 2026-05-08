@@ -49,7 +49,7 @@ struct WhisperlyApp: App {
                 .background(AppTheme.backgroundGradient)
         }
         #if os(macOS)
-        .windowStyle(.hiddenTitleBar)
+        // .windowStyle(.hiddenTitleBar) // Removed: causes window not to appear on macOS 26
         #endif
     }
 }
