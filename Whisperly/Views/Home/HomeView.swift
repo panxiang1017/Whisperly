@@ -92,7 +92,20 @@ struct HomeView: View {
     private var sidebar: some View {
         Group {
             if meetings.isEmpty {
-                PrivacyEmptyStateView()
+                VStack(spacing: AppTheme.paddingM) {
+                    Spacer()
+                    Image(systemName: "waveform")
+                        .font(.system(size: 32, weight: .thin))
+                        .foregroundStyle(AppTheme.accentTeal.opacity(0.4))
+                    Text(String(localized: "No meetings yet"))
+                        .font(AppTheme.captionFont)
+                        .foregroundStyle(AppTheme.secondaryText)
+                    Text(String(localized: "Tap Record to start"))
+                        .font(.system(size: 11))
+                        .foregroundStyle(AppTheme.inactiveText)
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
             } else if !searchText.isEmpty && filteredMeetings.isEmpty {
                 EmptyStateView(
                     systemImage: "magnifyingglass",
