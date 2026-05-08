@@ -11,7 +11,7 @@ struct MeetingDetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Custom segmented picker
+            // Custom tab picker with sliding indicator
             DetailTabPicker(selectedTab: $selectedTab)
                 .padding(.horizontal, AppTheme.paddingM)
                 .padding(.vertical, AppTheme.paddingS)
@@ -25,7 +25,7 @@ struct MeetingDetailView: View {
                 speakersView
             }
         }
-        .background(AppTheme.contentBackground)
+        .background(AppTheme.backgroundGradient)
         .navigationTitle(meeting.title.isEmpty ? String(localized: "Meeting Details") : meeting.title)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -45,7 +45,7 @@ struct MeetingDetailView: View {
 
     private var transcriptView: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0) {
+            LazyVStack(alignment: .leading, spacing: AppTheme.paddingM) {
                 if meeting.segments.isEmpty {
                     EmptyStateView(
                         systemImage: "text.quote",
@@ -56,13 +56,8 @@ struct MeetingDetailView: View {
                     let sortedSegments = meeting.segments.sorted { $0.startTime < $1.startTime }
                     ForEach(sortedSegments, id: \.id) { segment in
                         SegmentRow(segment: segment, speakers: meeting.speakers)
-
-                        // Subtle divider between segments
-                        if segment.id != sortedSegments.last?.id {
-                            AppTheme.divider
-                                .frame(height: 1)
-                                .padding(.leading, AppTheme.paddingL)
-                        }
+                            .padding(AppTheme.paddingM)
+                            .premiumGlassCard(cornerRadius: AppTheme.cornerRadiusS)
                     }
                 }
             }
@@ -89,11 +84,21 @@ struct MeetingDetailView: View {
                             } else {
                                 Label(String(localized: "Regenerate"), systemImage: "arrow.clockwise")
                                     .font(AppTheme.captionFont)
+                                    .foregroundStyle(AppTheme.accentTeal)
                             }
                         }
                         .disabled(isRegenerating)
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, AppTheme.paddingS)
+                        .padding(.vertical, AppTheme.paddingXS)
+                        .background(
+                            Capsule()
+                                .fill(AppTheme.accentTeal.opacity(0.1))
+                                .overlay(
+                                    Capsule()
+                                        .strokeBorder(AppTheme.accentTeal.opacity(0.2), lineWidth: 0.5)
+                                )
+                        )
                     }
                 }
 
@@ -113,7 +118,7 @@ struct MeetingDetailView: View {
                             .foregroundStyle(AppTheme.primaryText)
                     }
                     .padding(AppTheme.paddingM)
-                    .glassCard()
+                    .premiumGlassCard()
                 }
 
                 if !meeting.keyPoints.isEmpty {
@@ -133,7 +138,7 @@ struct MeetingDetailView: View {
                         }
                     }
                     .padding(AppTheme.paddingM)
-                    .glassCard()
+                    .premiumGlassCard()
                 }
 
                 if !meeting.actionItems.isEmpty {
@@ -156,7 +161,7 @@ struct MeetingDetailView: View {
                         }
                     }
                     .padding(AppTheme.paddingM)
-                    .glassCard()
+                    .premiumGlassCard()
                 }
 
                 if meeting.summary.isEmpty && meeting.keyPoints.isEmpty && meeting.actionItems.isEmpty {
@@ -183,30 +188,54 @@ struct MeetingDetailView: View {
                         message: String(localized: "Speaker information will appear here after processing.")
                     )
                 } else {
+                    let totalSegments = max(1, meeting.segments.count)
                     ForEach(meeting.speakers, id: \.id) { speaker in
+                        let segmentCount = meeting.segments.filter { $0.speakerID == speaker.id }.count
+                        let ratio = Double(segmentCount) / Double(totalSegments)
+
                         HStack(spacing: AppTheme.paddingM) {
-                            Circle()
-                                .fill(Color(hex: speaker.colorHex))
-                                .frame(width: 32, height: 32)
-                                .overlay {
-                                    Text(String(speaker.label.prefix(1)))
+                            // Avatar circle (larger, with glow border)
+                            ZStack {
+                                Circle()
+                                    .fill(Color(hex: speaker.colorHex).opacity(0.15))
+                                    .frame(width: 44, height: 44)
+                                Circle()
+                                    .strokeBorder(Color(hex: speaker.colorHex).opacity(0.4), lineWidth: 1)
+                                    .frame(width: 44, height: 44)
+                                Text(String(speaker.label.prefix(1)))
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.white)
+                            }
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text(speaker.label)
+                                        .font(AppTheme.headlineFont)
+                                        .foregroundStyle(AppTheme.primaryText)
+
+                                    Spacer()
+
+                                    Text(String(localized: "\(segmentCount) segments"))
                                         .font(AppTheme.captionFont)
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(AppTheme.secondaryText)
                                 }
 
-                            Text(speaker.label)
-                                .font(AppTheme.headlineFont)
-                                .foregroundStyle(AppTheme.primaryText)
-
-                            Spacer()
-
-                            let segmentCount = meeting.segments.filter { $0.speakerID == speaker.id }.count
-                            Text(String(localized: "\(segmentCount) segments"))
-                                .font(AppTheme.captionFont)
-                                .foregroundStyle(AppTheme.secondaryText)
+                                // Speaking ratio bar
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(AppTheme.divider)
+                                            .frame(height: 3)
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(AppTheme.accentTeal)
+                                            .frame(width: max(4, geo.size.width * ratio), height: 3)
+                                    }
+                                }
+                                .frame(height: 3)
+                            }
                         }
                         .padding(AppTheme.paddingM)
-                        .cardStyle()
+                        .premiumGlassCard()
                     }
                 }
             }
@@ -275,47 +304,49 @@ enum DetailTab: String, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - Custom Tab Picker
+// MARK: - Custom Tab Picker with Sliding Indicator
 
 struct DetailTabPicker: View {
     @Binding var selectedTab: DetailTab
+    @Namespace private var tabNamespace
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 0) {
             ForEach(DetailTab.allCases) { tab in
                 Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                         selectedTab = tab
                     }
                 } label: {
                     Text(tab.label)
                         .font(AppTheme.captionFont)
-                        .foregroundStyle(selectedTab == tab ? AppTheme.primaryText : AppTheme.secondaryText)
+                        .foregroundStyle(selectedTab == tab ? AppTheme.primaryText : AppTheme.inactiveText)
                         .padding(.horizontal, AppTheme.paddingM)
                         .padding(.vertical, AppTheme.paddingS)
-                        .background(
-                            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusS, style: .continuous)
-                                .fill(selectedTab == tab ? AppTheme.cardBackground : Color.clear)
-                                .shadow(
-                                    color: selectedTab == tab ? AppTheme.accentTeal.opacity(0.15) : .clear,
-                                    radius: 8
-                                )
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusS, style: .continuous)
-                                .strokeBorder(
-                                    selectedTab == tab ? AppTheme.accentTeal.opacity(0.3) : Color.clear,
-                                    lineWidth: 1
-                                )
-                        )
+                        .frame(maxWidth: .infinity)
+                        .background {
+                            if selectedTab == tab {
+                                Capsule()
+                                    .fill(AppTheme.accentTeal.opacity(0.15))
+                                    .overlay(
+                                        Capsule()
+                                            .strokeBorder(AppTheme.accentTeal.opacity(0.3), lineWidth: 0.5)
+                                    )
+                                    .matchedGeometryEffect(id: "tabIndicator", in: tabNamespace)
+                            }
+                        }
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(4)
         .background(
-            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous)
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusL, style: .continuous)
                 .fill(AppTheme.appBackground.opacity(0.5))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusL, style: .continuous)
+                        .strokeBorder(AppTheme.divider, lineWidth: 0.5)
+                )
         )
     }
 }
@@ -331,7 +362,7 @@ struct ActionItemRow: View {
         Button(action: onToggle) {
             HStack(alignment: .top, spacing: AppTheme.paddingS) {
                 Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isCompleted ? AppTheme.accentTeal : AppTheme.secondaryText)
+                    .foregroundStyle(isCompleted ? AppTheme.accentTeal : AppTheme.inactiveText)
                     .font(.title3)
 
                 Text(item)
@@ -422,11 +453,19 @@ struct SegmentRow: View {
                 if let speakerID = segment.speakerID,
                    let speaker = speakers.first(where: { $0.id == speakerID })
                 {
+                    // Speaker capsule badge
                     Text(speaker.label)
-                        .font(AppTheme.captionFont)
-                        .fontWeight(.semibold)
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(speakerColor(for: speaker))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(speakerColor(for: speaker).opacity(0.12))
+                        )
                 }
+
+                Spacer()
 
                 Text(formatTimestamp(segment.startTime))
                     .font(AppTheme.timestampFont)
@@ -437,11 +476,9 @@ struct SegmentRow: View {
                 .font(AppTheme.bodyFont)
                 .foregroundStyle(AppTheme.primaryText)
         }
-        .padding(.vertical, AppTheme.paddingS)
     }
 
     private func speakerColor(for speaker: Speaker) -> Color {
-        // Alternate between teal and purple for speakers
         let index = speakers.firstIndex(where: { $0.id == speaker.id }) ?? 0
         return index % 2 == 0 ? AppTheme.speakerTeal : AppTheme.speakerPurple
     }

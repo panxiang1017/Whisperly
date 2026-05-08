@@ -88,6 +88,32 @@ enum AppTheme {
     // MARK: - Free Tier
 
     static let freeRecordingLimitSeconds: Int = 1800 // 30 minutes
+
+    // MARK: - Advanced Gradients
+
+    static let backgroundGradient = LinearGradient(
+        colors: [
+            Color(red: 0.06, green: 0.06, blue: 0.10),
+            Color(red: 0.04, green: 0.04, blue: 0.07),
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let cardGradient = LinearGradient(
+        colors: [
+            Color.white.opacity(0.06),
+            Color.white.opacity(0.02),
+        ],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+
+    static let glowButtonGradient = LinearGradient(
+        colors: [accentTeal, Color(red: 0.0, green: 0.7, blue: 0.9)],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
 }
 
 // MARK: - Glass Card Modifier
@@ -117,13 +143,57 @@ struct GlassCardModifier: ViewModifier {
     }
 }
 
+// MARK: - Premium Glass Card Modifier
+
+struct PremiumGlassCard: ViewModifier {
+    var cornerRadius: CGFloat = AppTheme.cornerRadiusM
+    var borderOpacity: Double = 0.1
+    var glowColor: Color = AppTheme.accentTeal
+    var glowOpacity: Double = 0.05
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(AppTheme.cardBackground.opacity(0.8))
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(AppTheme.cardGradient)
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(
+                            RadialGradient(
+                                colors: [glowColor.opacity(glowOpacity), Color.clear],
+                                center: .topLeading,
+                                startRadius: 0,
+                                endRadius: 200
+                            )
+                        )
+                }
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(borderOpacity),
+                                Color.white.opacity(borderOpacity * 0.3),
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .shadow(color: Color.black.opacity(0.3), radius: 20, y: 8)
+    }
+}
+
 // MARK: - Legacy Card Modifier (preserves .cardStyle() call sites)
 
 struct CardModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .modifier(GlassCardModifier())
-            .shadow(color: AppTheme.cardShadow, radius: AppTheme.cardShadowRadius, y: AppTheme.cardShadowY)
+            .modifier(PremiumGlassCard())
     }
 }
 
@@ -134,5 +204,9 @@ extension View {
 
     func glassCard() -> some View {
         modifier(GlassCardModifier())
+    }
+
+    func premiumGlassCard(cornerRadius: CGFloat = AppTheme.cornerRadiusM) -> some View {
+        modifier(PremiumGlassCard(cornerRadius: cornerRadius))
     }
 }

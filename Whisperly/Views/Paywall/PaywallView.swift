@@ -50,8 +50,9 @@ struct PaywallView: View {
                         }
                     }
 
+                    // Gradient title
                     Text(String(localized: "Whisperly Pro"))
-                        .font(AppTheme.largeTitleFont)
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.tealPurpleGradient)
 
                     Text(String(localized: "Unlock unlimited recording time"))
@@ -61,7 +62,7 @@ struct PaywallView: View {
                 }
                 .padding(.top, AppTheme.paddingXL)
 
-                // Features
+                // Features in premium glass card
                 VStack(alignment: .leading, spacing: AppTheme.paddingM) {
                     FeatureRow(
                         icon: "infinity",
@@ -85,15 +86,15 @@ struct PaywallView: View {
                     )
                 }
                 .padding(AppTheme.paddingL)
-                .glassCard()
+                .premiumGlassCard()
                 .padding(.horizontal, AppTheme.paddingM)
 
                 // Price + Purchase button
                 VStack(spacing: AppTheme.paddingM) {
                     if let product = store.product {
                         Text(product.displayPrice)
-                            .font(AppTheme.largeTitleFont)
-                            .foregroundStyle(AppTheme.primaryText)
+                            .font(.system(size: 40, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.tealPurpleGradient)
 
                         Text(String(localized: "One-time purchase. Forever."))
                             .font(AppTheme.captionFont)
@@ -110,16 +111,10 @@ struct PaywallView: View {
                             Text(String(localized: "Purchase"))
                                 .font(.system(.headline, design: .default, weight: .bold))
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, AppTheme.paddingM)
+                                .frame(height: 54)
                                 .background(
                                     RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous)
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [AppTheme.proGradientStart, AppTheme.proGradientEnd],
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
+                                        .fill(AppTheme.tealPurpleGradient)
                                         .brightness(buttonHovered ? 0.1 : 0)
                                 )
                                 .foregroundStyle(.white)
@@ -131,6 +126,7 @@ struct PaywallView: View {
                         .padding(.horizontal, AppTheme.paddingL)
                     } else if store.isLoading {
                         ProgressView()
+                            .tint(AppTheme.accentTeal)
                     }
 
                     // Restore
@@ -167,13 +163,7 @@ struct PaywallView: View {
                 .padding(.bottom, AppTheme.paddingL)
             }
         }
-        .background(
-            LinearGradient(
-                colors: [AppTheme.appBackground, AppTheme.windowBackground],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
+        .background(AppTheme.backgroundGradient)
         .navigationTitle(String(localized: "Go Pro"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -196,11 +186,18 @@ struct FeatureRow: View {
 
     var body: some View {
         HStack(spacing: AppTheme.paddingM) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(AppTheme.accentTeal)
-                .shadow(color: AppTheme.accentTeal.opacity(0.4), radius: 6)
-                .frame(width: 32)
+            // Glowing icon circle
+            ZStack {
+                Circle()
+                    .fill(AppTheme.accentTeal.opacity(0.12))
+                    .frame(width: 40, height: 40)
+                Circle()
+                    .strokeBorder(AppTheme.accentTeal.opacity(0.2), lineWidth: 0.5)
+                    .frame(width: 40, height: 40)
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(.white)
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

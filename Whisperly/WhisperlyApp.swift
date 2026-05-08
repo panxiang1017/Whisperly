@@ -46,6 +46,7 @@ struct WhisperlyApp: App {
                 .modelContainer(modelContainer)
                 .preferredColorScheme(.dark)
                 .frame(minWidth: 800, minHeight: 500)
+                .background(AppTheme.backgroundGradient)
         }
         #if os(macOS)
         .windowStyle(.hiddenTitleBar)

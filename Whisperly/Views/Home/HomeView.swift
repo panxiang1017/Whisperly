@@ -59,14 +59,14 @@ struct HomeView: View {
                     repository: dependencies.repository
                 )
                 .id(meeting.id)
-                .background(AppTheme.contentBackground)
+                .background(AppTheme.backgroundGradient)
             } else {
                 PrivacyEmptyStateView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(AppTheme.contentBackground)
+                    .background(AppTheme.backgroundGradient)
             }
         }
-        .background(AppTheme.sidebarBackground)
+        .background(AppTheme.backgroundGradient)
         .sheet(isPresented: $showRecording) {
             NavigationStack {
                 RecordingView(
@@ -103,6 +103,7 @@ struct HomeView: View {
                 meetingList
             }
         }
+        .background(AppTheme.backgroundGradient)
     }
 
     // MARK: - Subviews
@@ -110,22 +111,21 @@ struct HomeView: View {
     private var meetingList: some View {
         List(selection: $selectedMeeting) {
             ForEach(filteredMeetings) { meeting in
-                MeetingRow(meeting: meeting)
+                MeetingRow(meeting: meeting, isSelected: selectedMeeting?.id == meeting.id)
                     .tag(meeting)
                     .listRowBackground(
-                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusS, style: .continuous)
-                            .fill(selectedMeeting?.id == meeting.id
-                                  ? AppTheme.accentTeal.opacity(0.12)
-                                  : Color.clear)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusS, style: .continuous)
-                                    .strokeBorder(
-                                        selectedMeeting?.id == meeting.id
-                                        ? AppTheme.accentTeal.opacity(0.3)
-                                        : Color.clear,
-                                        lineWidth: 1
-                                    )
-                            )
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusS, style: .continuous)
+                                .fill(selectedMeeting?.id == meeting.id
+                                      ? AppTheme.accentTeal.opacity(0.08)
+                                      : Color.clear)
+                            if selectedMeeting?.id == meeting.id {
+                                RoundedRectangle(cornerRadius: 1)
+                                    .fill(AppTheme.accentTeal)
+                                    .frame(width: 2)
+                                    .padding(.vertical, 4)
+                            }
+                        }
                     )
             }
             .onDelete(perform: deleteMeetings)
@@ -148,7 +148,11 @@ struct HomeView: View {
             .padding(.vertical, AppTheme.paddingXS)
             .background(
                 Capsule()
-                    .strokeBorder(AppTheme.recording.opacity(0.4), lineWidth: 1)
+                    .fill(AppTheme.recording.opacity(0.08))
+                    .overlay(
+                        Capsule()
+                            .strokeBorder(AppTheme.recording.opacity(0.3), lineWidth: 1)
+                    )
             )
         }
         .buttonStyle(.plain)
@@ -234,12 +238,73 @@ struct PrivacyEmptyStateView: View {
                 .foregroundStyle(AppTheme.secondaryText)
                 .multilineTextAlignment(.center)
 
+            // Feature badges
+            HStack(spacing: AppTheme.paddingL) {
+                PrivacyFeatureBadge(icon: "shield.checkmark", label: "On-device")
+                PrivacyFeatureBadge(icon: "lock.fill", label: "Encrypted")
+                PrivacyFeatureBadge(icon: "bolt.fill", label: "Real-time")
+            }
+            .padding(.top, AppTheme.paddingS)
+
             Text(String(localized: "Your meetings stay on this device"))
                 .font(AppTheme.captionFont)
                 .foregroundStyle(AppTheme.inactiveText)
-                .padding(.top, AppTheme.paddingXS)
         }
         .padding(AppTheme.paddingXL)
+    }
+}
+
+// MARK: - Privacy Feature Badge
+
+struct PrivacyFeatureBadge: View {
+    let icon: String
+    let label: String
+    @State private var glow: Double = 0.3
+
+    var body: some View {
+        VStack(spacing: 6) {
+            ZStack {
+                Circle()
+                    .fill(AppTheme.accentTeal.opacity(glow * 0.15))
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(AppTheme.accentTeal)
+            }
+
+            Text(label)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(AppTheme.secondaryText)
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                glow = 1.0
+            }
+        }
+    }
+}
+
+// MARK: - Capsule Badge
+
+struct CapsuleBadge: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 9, weight: .medium))
+            Text(text)
+                .font(.system(size: 10, weight: .medium))
+        }
+        .foregroundStyle(AppTheme.secondaryText)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(
+            Capsule()
+                .fill(Color.white.opacity(0.05))
+        )
     }
 }
 
@@ -247,31 +312,51 @@ struct PrivacyEmptyStateView: View {
 
 struct MeetingRow: View {
     let meeting: Meeting
+    var isSelected: Bool = false
     @State private var isHovered = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.paddingXS) {
-            Text(meeting.title.isEmpty ? String(localized: "Untitled Meeting") : meeting.title)
-                .font(AppTheme.headlineFont)
-                .foregroundStyle(AppTheme.primaryText)
-                .lineLimit(1)
+        VStack(alignment: .leading, spacing: AppTheme.paddingXS + 2) {
+            // Title with privacy badge
+            HStack(spacing: 6) {
+                if meeting.createdAt.timeIntervalSinceNow > -86400 {
+                    Image(systemName: "shield.checkmark")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(AppTheme.accentTeal.opacity(0.7))
+                }
+                Text(meeting.title.isEmpty ? String(localized: "Untitled Meeting") : meeting.title)
+                    .font(AppTheme.headlineFont)
+                    .foregroundStyle(AppTheme.primaryText)
+                    .lineLimit(1)
+            }
 
-            HStack(spacing: AppTheme.paddingS) {
-                Label(formattedDate, systemImage: "calendar")
-                Label(formattedDuration, systemImage: "clock")
+            // Meta badges
+            HStack(spacing: 6) {
+                CapsuleBadge(icon: "calendar", text: formattedDate)
+                CapsuleBadge(icon: "clock", text: formattedDuration)
 
                 if !meeting.speakers.isEmpty {
-                    Label("\(meeting.speakers.count)", systemImage: "person.2")
+                    CapsuleBadge(icon: "person.2", text: "\(meeting.speakers.count)")
                 }
             }
-            .font(AppTheme.captionFont)
-            .foregroundStyle(AppTheme.secondaryText)
 
+            // Summary preview
             if !meeting.summary.isEmpty {
                 Text(meeting.summary)
                     .font(AppTheme.bodyFont)
                     .foregroundStyle(AppTheme.secondaryText)
                     .lineLimit(2)
+            }
+
+            // Bottom separator + segment count
+            HStack(spacing: AppTheme.paddingS) {
+                Rectangle()
+                    .fill(AppTheme.divider)
+                    .frame(height: 0.5)
+                Text(String(localized: "\(meeting.segments.count) segments"))
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(AppTheme.inactiveText)
+                    .fixedSize()
             }
         }
         .padding(.vertical, AppTheme.paddingXS)

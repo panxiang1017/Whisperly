@@ -28,10 +28,14 @@ struct SettingsView: View {
                         Task { await store.restorePurchases() }
                     } label: {
                         Label(String(localized: "Restore Purchases"), systemImage: "arrow.clockwise")
+                            .foregroundStyle(AppTheme.accentTeal)
                     }
                 }
             } header: {
                 Text(String(localized: "Pro Status"))
+                    .font(AppTheme.captionFont)
+                    .foregroundStyle(AppTheme.inactiveText)
+                    .textCase(.uppercase)
             }
 
             // Summarization engine
@@ -55,6 +59,7 @@ struct SettingsView: View {
                 )) {
                     VStack(alignment: .leading, spacing: AppTheme.paddingXS) {
                         Text(String(localized: "iCloud Sync"))
+                            .foregroundStyle(AppTheme.primaryText)
                         Text(String(localized: "Syncs meeting text across your devices. Audio files stay on-device only."))
                             .font(AppTheme.captionFont)
                             .foregroundStyle(AppTheme.secondaryText)
@@ -63,6 +68,9 @@ struct SettingsView: View {
                 .tint(AppTheme.accentTeal)
             } header: {
                 Text(String(localized: "Sync"))
+                    .font(AppTheme.captionFont)
+                    .foregroundStyle(AppTheme.inactiveText)
+                    .textCase(.uppercase)
             }
 
             #if os(macOS)
@@ -73,6 +81,7 @@ struct SettingsView: View {
                 )) {
                     VStack(alignment: .leading, spacing: AppTheme.paddingXS) {
                         Text(String(localized: "Record System Audio"))
+                            .foregroundStyle(AppTheme.primaryText)
                         Text(String(localized: "Capture audio from video calls (Zoom, Meet, etc.) alongside your microphone."))
                             .font(AppTheme.captionFont)
                             .foregroundStyle(AppTheme.secondaryText)
@@ -81,6 +90,9 @@ struct SettingsView: View {
                 .tint(AppTheme.accentTeal)
             } header: {
                 Text(String(localized: "Audio Capture"))
+                    .font(AppTheme.captionFont)
+                    .foregroundStyle(AppTheme.inactiveText)
+                    .textCase(.uppercase)
             }
             #endif
 
@@ -90,24 +102,30 @@ struct SettingsView: View {
             // About
             Section {
                 LabeledContent(String(localized: "Version"), value: appVersion)
+                    .foregroundStyle(AppTheme.primaryText)
 
                 if let url = Self.privacyPolicyURL {
                     Link(destination: url) {
                         Label(String(localized: "Privacy Policy"), systemImage: "hand.raised")
+                            .foregroundStyle(AppTheme.accentTeal)
                     }
                 }
 
                 if let url = Self.termsOfUseURL {
                     Link(destination: url) {
                         Label(String(localized: "Terms of Use"), systemImage: "doc.text")
+                            .foregroundStyle(AppTheme.accentTeal)
                     }
                 }
             } header: {
                 Text(String(localized: "About"))
+                    .font(AppTheme.captionFont)
+                    .foregroundStyle(AppTheme.inactiveText)
+                    .textCase(.uppercase)
             }
         }
         .scrollContentBackground(.hidden)
-        .background(AppTheme.windowBackground)
+        .background(AppTheme.backgroundGradient)
         .navigationTitle(String(localized: "Settings"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -143,6 +161,7 @@ struct SummarizationEngineSection: View {
     var body: some View {
         Section {
             LabeledContent(String(localized: "Active Engine"), value: SummarizationEngine.currentEngineName)
+                .foregroundStyle(AppTheme.primaryText)
 
             VStack(alignment: .leading, spacing: AppTheme.paddingXS) {
                 Text(String(localized: "Whisperly automatically uses the best available summarization engine for your device."))
@@ -157,6 +176,9 @@ struct SummarizationEngineSection: View {
             }
         } header: {
             Text(String(localized: "Summarization"))
+                .font(AppTheme.captionFont)
+                .foregroundStyle(AppTheme.inactiveText)
+                .textCase(.uppercase)
         }
     }
 }
@@ -169,7 +191,9 @@ struct MLXModelManagementSection: View {
     var body: some View {
         Section {
             LabeledContent(String(localized: "Model"), value: modelManager.mlxModelName)
+                .foregroundStyle(AppTheme.primaryText)
             LabeledContent(String(localized: "Size"), value: ModelManager.estimatedMLXModelSize)
+                .foregroundStyle(AppTheme.primaryText)
 
             switch modelManager.mlxModelState {
             case .ready:
@@ -177,11 +201,13 @@ struct MLXModelManagementSection: View {
                     String(localized: "Status"),
                     value: String(localized: "Downloaded")
                 )
+                .foregroundStyle(AppTheme.primaryText)
 
                 Button(role: .destructive) {
                     try? modelManager.deleteMLXModel()
                 } label: {
                     Label(String(localized: "Delete Model"), systemImage: "trash")
+                        .foregroundStyle(AppTheme.destructive)
                 }
 
             case .notDownloaded:
@@ -202,6 +228,7 @@ struct MLXModelManagementSection: View {
                     Text("\(Int(progress * 100))%")
                         .font(AppTheme.captionFont)
                         .monospacedDigit()
+                        .foregroundStyle(AppTheme.secondaryText)
                 }
 
             case .failed(let message):
@@ -211,6 +238,9 @@ struct MLXModelManagementSection: View {
             }
         } header: {
             Text(String(localized: "Summarization Model (MLX)"))
+                .font(AppTheme.captionFont)
+                .foregroundStyle(AppTheme.inactiveText)
+                .textCase(.uppercase)
         }
     }
 }

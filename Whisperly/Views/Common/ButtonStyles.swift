@@ -8,15 +8,12 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(.vertical, AppTheme.paddingM)
             .padding(.horizontal, AppTheme.paddingL)
             .background(
-                LinearGradient(
-                    colors: [AppTheme.accentTeal, AppTheme.accentPurple],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous)
+                    .fill(AppTheme.tealPurpleGradient)
+                    .brightness(configuration.isPressed ? -0.05 : 0)
             )
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous))
-            .opacity(configuration.isPressed ? 0.8 : 1.0)
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }
@@ -28,13 +25,17 @@ struct SecondaryButtonStyle: ButtonStyle {
             .foregroundStyle(AppTheme.accentTeal)
             .padding(.vertical, AppTheme.paddingM)
             .padding(.horizontal, AppTheme.paddingL)
-            .background(AppTheme.accentTeal.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous))
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous)
+                    .fill(AppTheme.accentTeal.opacity(0.08))
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous)
                     .strokeBorder(AppTheme.accentTeal.opacity(0.2), lineWidth: 1)
             )
-            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous))
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 

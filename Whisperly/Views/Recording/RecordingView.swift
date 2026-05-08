@@ -6,65 +6,72 @@ struct RecordingView: View {
     var onMeetingSaved: ((Meeting) -> Void)?
 
     var body: some View {
-        VStack(spacing: AppTheme.paddingL) {
-            Spacer()
+        ZStack {
+            // Background with center glow
+            AppTheme.backgroundGradient
+                .ignoresSafeArea()
 
-            // Audio level meter
-            AudioLevelView(level: viewModel.audioLevel)
-                .frame(height: 120)
-                .padding(.horizontal, AppTheme.paddingL)
+            RadialGradient(
+                colors: [AppTheme.accentTeal.opacity(0.03), Color.clear],
+                center: .center,
+                startRadius: 0,
+                endRadius: 300
+            )
+            .ignoresSafeArea()
 
-            // Elapsed time
-            Text(viewModel.formattedElapsed)
-                .font(AppTheme.countdownFont)
-                .monospacedDigit()
-                .foregroundStyle(AppTheme.primaryText)
+            VStack(spacing: AppTheme.paddingL) {
+                Spacer()
 
-            // Countdown for free users
-            if viewModel.showCountdown {
-                VStack(spacing: AppTheme.paddingXS) {
-                    Text(String(localized: "Free recording limit"))
-                        .font(AppTheme.captionFont)
-                        .foregroundStyle(AppTheme.secondaryText)
+                // Circular waveform visualizer
+                CircularWaveformView(level: viewModel.audioLevel)
+                    .frame(width: 220, height: 220)
 
-                    Text(viewModel.formattedRemaining)
-                        .font(AppTheme.titleFont)
-                        .monospacedDigit()
-                        .foregroundStyle(viewModel.isCountdownUrgent ? AppTheme.destructive : AppTheme.secondaryText)
-                        .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: viewModel.isCountdownUrgent)
+                // Elapsed time
+                Text(viewModel.formattedElapsed)
+                    .font(.system(size: 56, weight: .thin, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(Color.white.opacity(0.9))
+
+                // Free tier progress bar
+                if viewModel.showCountdown {
+                    RecordingProgressBar(
+                        progress: Double(viewModel.elapsedSeconds) / Double(AppTheme.freeRecordingLimitSeconds),
+                        remainingText: viewModel.formattedRemaining,
+                        isUrgent: viewModel.isCountdownUrgent
+                    )
+                    .padding(.horizontal, AppTheme.paddingXL)
+                    .transition(.opacity.combined(with: .scale))
                 }
-                .transition(.opacity.combined(with: .scale))
-            }
 
-            Spacer()
+                Spacer()
 
-            // Pipeline processing indicator
-            if viewModel.isProcessing, let stage = viewModel.pipelineStage {
-                PipelineStageIndicator(stage: stage)
-                    .transition(.opacity)
-            }
+                // Pipeline processing indicator
+                if viewModel.isProcessing, let stage = viewModel.pipelineStage {
+                    PipelineStageIndicator(stage: stage)
+                        .transition(.opacity)
+                }
 
-            // Stop button
-            if viewModel.isRecording {
-                RecordingStopButton {
-                    Task {
-                        if let meeting = await viewModel.stopRecording() {
-                            onMeetingSaved?(meeting)
-                            dismiss()
+                // Stop button
+                if viewModel.isRecording {
+                    RecordingStopButton {
+                        Task {
+                            if let meeting = await viewModel.stopRecording() {
+                                onMeetingSaved?(meeting)
+                                dismiss()
+                            }
                         }
                     }
                 }
+
+                // Privacy hint
+                PrivacyHintCard()
+                    .padding(.horizontal, AppTheme.paddingM)
+
+                Spacer()
+                    .frame(height: AppTheme.paddingM)
             }
-
-            // Privacy hint
-            PrivacyHintCard()
-                .padding(.horizontal, AppTheme.paddingM)
-
-            Spacer()
-                .frame(height: AppTheme.paddingM)
+            .padding()
         }
-        .padding()
-        .background(AppTheme.appBackground)
         .navigationTitle(String(localized: "Recording"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -101,6 +108,159 @@ struct RecordingView: View {
     }
 }
 
+// MARK: - Circular Waveform Visualizer
+
+struct CircularWaveformView: View {
+    let level: Float
+    @State private var breathe: Double = 0.3
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
+            let phase = timeline.date.timeIntervalSinceReferenceDate * 2.0
+
+            Canvas { context, size in
+                let center = CGPoint(x: size.width / 2, y: size.height / 2)
+                let baseRadius = min(size.width, size.height) / 2 * 0.6
+                let normalizedLevel = CGFloat(max(0.05, min(1.0, level)))
+                let amplitude = normalizedLevel * baseRadius * 0.3
+
+                // Outer glow ring
+                let glowPath = wavyCirclePath(
+                    center: center,
+                    baseRadius: baseRadius + 6,
+                    amplitude: amplitude * 0.4,
+                    phase: phase * 0.8,
+                    segments: 100
+                )
+                context.stroke(
+                    glowPath,
+                    with: .color(Color(red: 0.0, green: 0.898, blue: 0.8).opacity(0.15)),
+                    lineWidth: 10
+                )
+
+                // Main waveform ring
+                let mainPath = wavyCirclePath(
+                    center: center,
+                    baseRadius: baseRadius,
+                    amplitude: amplitude,
+                    phase: phase,
+                    segments: 120
+                )
+                let gradient = Gradient(colors: [
+                    Color(red: 0.0, green: 0.898, blue: 0.8),
+                    Color(red: 0.486, green: 0.227, blue: 0.929),
+                ])
+                context.stroke(
+                    mainPath,
+                    with: .linearGradient(
+                        gradient,
+                        startPoint: CGPoint(x: 0, y: 0),
+                        endPoint: CGPoint(x: size.width, y: size.height)
+                    ),
+                    lineWidth: 3
+                )
+
+                // Inner subtle ring
+                let innerPath = wavyCirclePath(
+                    center: center,
+                    baseRadius: baseRadius * 0.82,
+                    amplitude: amplitude * 0.2,
+                    phase: phase * 1.3,
+                    segments: 80
+                )
+                context.stroke(
+                    innerPath,
+                    with: .color(Color.white.opacity(0.06)),
+                    lineWidth: 1
+                )
+
+                // Center dot
+                let dotRect = CGRect(
+                    x: center.x - 3,
+                    y: center.y - 3,
+                    width: 6,
+                    height: 6
+                )
+                context.fill(
+                    Circle().path(in: dotRect),
+                    with: .color(Color(red: 0.0, green: 0.898, blue: 0.8).opacity(0.5))
+                )
+            }
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                breathe = 0.7
+            }
+        }
+    }
+
+    private func wavyCirclePath(
+        center: CGPoint,
+        baseRadius: CGFloat,
+        amplitude: CGFloat,
+        phase: Double,
+        segments: Int
+    ) -> Path {
+        Path { p in
+            for i in 0...segments {
+                let angle = Double(i) / Double(segments) * 2 * .pi
+                let wave = sin(angle * 6 + phase) * Double(amplitude)
+                    + sin(angle * 3 + phase * 0.7) * Double(amplitude) * 0.5
+                let r = Double(baseRadius) + wave
+                let point = CGPoint(
+                    x: Double(center.x) + r * cos(angle),
+                    y: Double(center.y) + r * sin(angle)
+                )
+                if i == 0 {
+                    p.move(to: point)
+                } else {
+                    p.addLine(to: point)
+                }
+            }
+            p.closeSubpath()
+        }
+    }
+}
+
+// MARK: - Recording Progress Bar
+
+struct RecordingProgressBar: View {
+    let progress: Double
+    let remainingText: String
+    var isUrgent: Bool = false
+
+    var body: some View {
+        HStack(spacing: AppTheme.paddingS) {
+            Circle()
+                .fill(isUrgent ? AppTheme.destructive : AppTheme.accentTeal)
+                .frame(width: 6, height: 6)
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(AppTheme.divider)
+                        .frame(height: 4)
+
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(
+                            isUrgent
+                                ? LinearGradient(colors: [AppTheme.destructive, AppTheme.destructive.opacity(0.7)], startPoint: .leading, endPoint: .trailing)
+                                : LinearGradient(colors: [AppTheme.accentTeal, AppTheme.accentPurple], startPoint: .leading, endPoint: .trailing)
+                        )
+                        .frame(width: max(0, geo.size.width * min(1.0, progress)), height: 4)
+                }
+            }
+            .frame(height: 4)
+
+            Text(remainingText)
+                .font(AppTheme.timestampFont)
+                .monospacedDigit()
+                .foregroundStyle(isUrgent ? AppTheme.destructive : AppTheme.inactiveText)
+                .fixedSize()
+        }
+    }
+}
+
 // MARK: - Pipeline Stage Indicator
 
 struct PipelineStageIndicator: View {
@@ -118,6 +278,9 @@ struct PipelineStageIndicator: View {
                 .font(AppTheme.captionFont)
                 .foregroundStyle(AppTheme.secondaryText)
         }
+        .padding(.horizontal, AppTheme.paddingM)
+        .padding(.vertical, AppTheme.paddingS)
+        .premiumGlassCard(cornerRadius: AppTheme.cornerRadiusL)
         .onAppear {
             withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
                 glowPulse = true
@@ -151,27 +314,27 @@ struct RecordingStopButton: View {
                     .frame(width: AppTheme.recordButtonSize + 16, height: AppTheme.recordButtonSize + 16)
                     .scaleEffect(pulseRing ? 1.3 : 1.0)
 
-                // Glow ring
+                // Glow ring (teal-purple gradient)
                 Circle()
                     .strokeBorder(
                         LinearGradient(
-                            colors: [AppTheme.accentTeal.opacity(0.4), AppTheme.accentPurple.opacity(0.4)],
+                            colors: [AppTheme.accentTeal.opacity(0.5), AppTheme.accentPurple.opacity(0.5)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        lineWidth: 2
+                        lineWidth: 2.5
                     )
                     .frame(width: AppTheme.recordButtonSize + 8, height: AppTheme.recordButtonSize + 8)
 
-                // Red fill
+                // Red fill (slightly desaturated)
                 Circle()
-                    .fill(AppTheme.recording)
+                    .fill(Color(red: 0.85, green: 0.2, blue: 0.2))
                     .frame(width: AppTheme.recordButtonSize, height: AppTheme.recordButtonSize)
 
-                // Stop square
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                // Stop square (smaller)
+                RoundedRectangle(cornerRadius: 5, style: .continuous)
                     .fill(.white)
-                    .frame(width: 26, height: 26)
+                    .frame(width: 20, height: 20)
             }
         }
         .buttonStyle(.plain)
@@ -199,62 +362,6 @@ struct PrivacyHintCard: View {
         }
         .padding(.horizontal, AppTheme.paddingM)
         .padding(.vertical, AppTheme.paddingS)
-        .glassCard()
-    }
-}
-
-// MARK: - Audio Level Visualization
-
-struct AudioLevelView: View {
-    let level: Float
-    private let barCount = 30
-
-    var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 2) {
-                ForEach(0..<barCount, id: \.self) { index in
-                    let normalizedIndex = Float(index) / Float(barCount)
-                    let barHeight = computeBarHeight(
-                        index: normalizedIndex,
-                        level: level,
-                        maxHeight: geometry.size.height
-                    )
-
-                    RoundedRectangle(cornerRadius: 2, style: .continuous)
-                        .fill(barColor(for: normalizedIndex))
-                        .frame(height: barHeight)
-                        .shadow(color: barGlow(for: normalizedIndex), radius: 6)
-                }
-            }
-            .frame(maxHeight: .infinity, alignment: .center)
-        }
-    }
-
-    private func computeBarHeight(index: Float, level: Float, maxHeight: CGFloat) -> CGFloat {
-        let distance = abs(index - 0.5) * 2.0
-        let amplitude = max(0, level - distance * 0.5)
-        let minHeight: CGFloat = 4
-        return max(minHeight, CGFloat(amplitude) * maxHeight)
-    }
-
-    private func barColor(for position: Float) -> Color {
-        if level > 0.7 {
-            return AppTheme.destructive
-        }
-        // Gradient from teal to purple based on position
-        let teal = AppTheme.accentTeal
-        let purple = AppTheme.accentPurple
-        return position < 0.5
-            ? teal.opacity(Double(1.0 - position))
-            : purple.opacity(Double(position))
-    }
-
-    private func barGlow(for position: Float) -> Color {
-        if level > 0.7 {
-            return AppTheme.destructive.opacity(0.4)
-        }
-        return position < 0.5
-            ? AppTheme.accentTeal.opacity(0.5)
-            : AppTheme.accentPurple.opacity(0.5)
+        .premiumGlassCard(cornerRadius: AppTheme.cornerRadiusL)
     }
 }
