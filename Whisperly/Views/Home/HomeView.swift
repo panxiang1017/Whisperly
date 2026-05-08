@@ -36,25 +36,19 @@ struct HomeView: View {
                 }
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
-                        recordButton
-                    }
-                    #if os(iOS)
-                    ToolbarItem(placement: .topBarLeading) {
-                        NavigationLink {
-                            SettingsView(modelManager: dependencies.modelManager)
-                        } label: {
-                            Label(String(localized: "Settings"), systemImage: "gearshape")
+                        HStack(spacing: AppTheme.paddingS) {
+                            recordButton
+
+                            NavigationLink {
+                                SettingsView(modelManager: dependencies.modelManager)
+                            } label: {
+                                Label(String(localized: "Settings"), systemImage: "gearshape")
+                                    .font(AppTheme.headlineFont)
+                                    .foregroundStyle(AppTheme.secondaryText)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
-                    #else
-                    ToolbarItem {
-                        NavigationLink {
-                            SettingsView(modelManager: dependencies.modelManager)
-                        } label: {
-                            Label(String(localized: "Settings"), systemImage: "gearshape")
-                        }
-                    }
-                    #endif
                 }
         } detail: {
             if let meeting = selectedMeeting {
