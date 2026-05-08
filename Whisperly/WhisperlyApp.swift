@@ -44,6 +44,11 @@ struct WhisperlyApp: App {
             HomeView(dependencies: dependencies)
                 .environment(dependencies.storeManager)
                 .modelContainer(modelContainer)
+                .preferredColorScheme(.dark)
+                .frame(minWidth: 800, minHeight: 500)
         }
+        #if os(macOS)
+        .windowStyle(.hiddenTitleBar)
+        #endif
     }
 }

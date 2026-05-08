@@ -7,7 +7,13 @@ struct PrimaryButtonStyle: ButtonStyle {
             .foregroundStyle(.white)
             .padding(.vertical, AppTheme.paddingM)
             .padding(.horizontal, AppTheme.paddingL)
-            .background(AppTheme.accent)
+            .background(
+                LinearGradient(
+                    colors: [AppTheme.accentTeal, AppTheme.accentPurple],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous))
             .opacity(configuration.isPressed ? 0.8 : 1.0)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
@@ -19,11 +25,15 @@ struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AppTheme.headlineFont)
-            .foregroundStyle(AppTheme.accent)
+            .foregroundStyle(AppTheme.accentTeal)
             .padding(.vertical, AppTheme.paddingM)
             .padding(.horizontal, AppTheme.paddingL)
-            .background(AppTheme.accent.opacity(0.1))
+            .background(AppTheme.accentTeal.opacity(0.1))
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous)
+                    .strokeBorder(AppTheme.accentTeal.opacity(0.2), lineWidth: 1)
+            )
             .opacity(configuration.isPressed ? 0.8 : 1.0)
     }
 }

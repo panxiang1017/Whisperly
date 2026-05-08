@@ -24,79 +24,89 @@ struct HomeView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if meetings.isEmpty {
-                    EmptyStateView(
-                        systemImage: "waveform",
-                        title: String(localized: "No meetings yet"),
-                        message: String(localized: "Tap the record button to start your first meeting.")
-                    )
-                } else if !searchText.isEmpty && filteredMeetings.isEmpty {
-                    EmptyStateView(
-                        systemImage: "magnifyingglass",
-                        title: String(localized: "No results"),
-                        message: String(localized: "No meetings matched your search.")
-                    )
-                } else {
-                    meetingList
+        NavigationSplitView {
+            sidebar
+                .navigationTitle(String(localized: "Whisperly"))
+                .searchable(
+                    text: $searchText,
+                    prompt: String(localized: "Search meetings")
+                )
+                .onChange(of: searchText) { _, newValue in
+                    debounceSearch(newValue)
                 }
-            }
-            .navigationTitle(String(localized: "Whisperly"))
-            .searchable(
-                text: $searchText,
-                prompt: String(localized: "Search meetings")
-            )
-            .onChange(of: searchText) { _, newValue in
-                debounceSearch(newValue)
-            }
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    recordButton
-                }
-                #if os(iOS)
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationLink {
-                        SettingsView(modelManager: dependencies.modelManager)
-                    } label: {
-                        Label(String(localized: "Settings"), systemImage: "gearshape")
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        recordButton
                     }
-                }
-                #else
-                ToolbarItem {
-                    NavigationLink {
-                        SettingsView(modelManager: dependencies.modelManager)
-                    } label: {
-                        Label(String(localized: "Settings"), systemImage: "gearshape")
+                    #if os(iOS)
+                    ToolbarItem(placement: .topBarLeading) {
+                        NavigationLink {
+                            SettingsView(modelManager: dependencies.modelManager)
+                        } label: {
+                            Label(String(localized: "Settings"), systemImage: "gearshape")
+                        }
                     }
+                    #else
+                    ToolbarItem {
+                        NavigationLink {
+                            SettingsView(modelManager: dependencies.modelManager)
+                        } label: {
+                            Label(String(localized: "Settings"), systemImage: "gearshape")
+                        }
+                    }
+                    #endif
                 }
-                #endif
-            }
-            .sheet(isPresented: $showRecording) {
-                NavigationStack {
-                    RecordingView(
-                        viewModel: dependencies.makeRecordingViewModel()
-                    )
-                }
-                #if os(macOS)
-                .frame(minWidth: 400, minHeight: 500)
-                #endif
-            }
-            .sheet(isPresented: $showPaywall) {
-                NavigationStack {
-                    PaywallView()
-                }
-                #if os(macOS)
-                .frame(minWidth: 400, minHeight: 600)
-                #endif
-            }
-            .navigationDestination(item: $selectedMeeting) { meeting in
+        } detail: {
+            if let meeting = selectedMeeting {
                 MeetingDetailView(
                     meeting: meeting,
                     exportService: dependencies.exportService,
                     summarizationService: dependencies.summarizationService,
                     repository: dependencies.repository
                 )
+                .id(meeting.id)
+                .background(AppTheme.contentBackground)
+            } else {
+                PrivacyEmptyStateView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(AppTheme.contentBackground)
+            }
+        }
+        .background(AppTheme.sidebarBackground)
+        .sheet(isPresented: $showRecording) {
+            NavigationStack {
+                RecordingView(
+                    viewModel: dependencies.makeRecordingViewModel()
+                )
+            }
+            #if os(macOS)
+            .frame(minWidth: 400, minHeight: 500)
+            #endif
+        }
+        .sheet(isPresented: $showPaywall) {
+            NavigationStack {
+                PaywallView()
+            }
+            #if os(macOS)
+            .frame(minWidth: 400, minHeight: 600)
+            #endif
+        }
+    }
+
+    // MARK: - Sidebar
+
+    private var sidebar: some View {
+        Group {
+            if meetings.isEmpty {
+                PrivacyEmptyStateView()
+            } else if !searchText.isEmpty && filteredMeetings.isEmpty {
+                EmptyStateView(
+                    systemImage: "magnifyingglass",
+                    title: String(localized: "No results"),
+                    message: String(localized: "No meetings matched your search.")
+                )
+            } else {
+                meetingList
             }
         }
     }
@@ -104,28 +114,50 @@ struct HomeView: View {
     // MARK: - Subviews
 
     private var meetingList: some View {
-        List {
+        List(selection: $selectedMeeting) {
             ForEach(filteredMeetings) { meeting in
-                Button {
-                    selectedMeeting = meeting
-                } label: {
-                    MeetingRow(meeting: meeting)
-                }
-                .buttonStyle(.plain)
+                MeetingRow(meeting: meeting)
+                    .tag(meeting)
+                    .listRowBackground(
+                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusS, style: .continuous)
+                            .fill(selectedMeeting?.id == meeting.id
+                                  ? AppTheme.accentTeal.opacity(0.12)
+                                  : Color.clear)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusS, style: .continuous)
+                                    .strokeBorder(
+                                        selectedMeeting?.id == meeting.id
+                                        ? AppTheme.accentTeal.opacity(0.3)
+                                        : Color.clear,
+                                        lineWidth: 1
+                                    )
+                            )
+                    )
             }
             .onDelete(perform: deleteMeetings)
         }
-        .listStyle(.plain)
+        .listStyle(.sidebar)
+        .scrollContentBackground(.hidden)
     }
 
     private var recordButton: some View {
         Button {
             showRecording = true
         } label: {
-            Label(String(localized: "Record"), systemImage: "record.circle")
-                .font(AppTheme.headlineFont)
-                .foregroundStyle(AppTheme.recording)
+            HStack(spacing: 6) {
+                Image(systemName: "record.circle")
+                Text(String(localized: "Record"))
+            }
+            .font(AppTheme.headlineFont)
+            .foregroundStyle(AppTheme.recording)
+            .padding(.horizontal, AppTheme.paddingS)
+            .padding(.vertical, AppTheme.paddingXS)
+            .background(
+                Capsule()
+                    .strokeBorder(AppTheme.recording.opacity(0.4), lineWidth: 1)
+            )
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Search
@@ -161,15 +193,73 @@ struct HomeView: View {
     }
 }
 
+// MARK: - Privacy Empty State
+
+struct PrivacyEmptyStateView: View {
+    @State private var glowOpacity: Double = 0.4
+
+    var body: some View {
+        VStack(spacing: AppTheme.paddingL) {
+            ZStack {
+                // Glow background
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [AppTheme.accentTeal.opacity(glowOpacity * 0.3), Color.clear],
+                            center: .center,
+                            startRadius: 10,
+                            endRadius: 80
+                        )
+                    )
+                    .frame(width: 160, height: 160)
+
+                // Shield + waveform
+                ZStack {
+                    Image(systemName: "shield.lefthalf.filled")
+                        .font(.system(size: 56, weight: .thin))
+                        .foregroundStyle(AppTheme.tealPurpleGradient)
+
+                    Image(systemName: "waveform")
+                        .font(.system(size: 22, weight: .medium))
+                        .foregroundStyle(AppTheme.accentTeal)
+                        .offset(x: 2, y: 2)
+                }
+            }
+            .onAppear {
+                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                    glowOpacity = 0.8
+                }
+            }
+
+            Text(String(localized: "No meetings yet"))
+                .font(AppTheme.titleFont)
+                .foregroundStyle(AppTheme.primaryText)
+
+            Text(String(localized: "Tap the record button to start your first meeting."))
+                .font(AppTheme.bodyFont)
+                .foregroundStyle(AppTheme.secondaryText)
+                .multilineTextAlignment(.center)
+
+            Text(String(localized: "Your meetings stay on this device"))
+                .font(AppTheme.captionFont)
+                .foregroundStyle(AppTheme.inactiveText)
+                .padding(.top, AppTheme.paddingXS)
+        }
+        .padding(AppTheme.paddingXL)
+    }
+}
+
 // MARK: - Meeting Row
 
 struct MeetingRow: View {
     let meeting: Meeting
+    @State private var isHovered = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.paddingXS) {
             Text(meeting.title.isEmpty ? String(localized: "Untitled Meeting") : meeting.title)
                 .font(AppTheme.headlineFont)
+                .foregroundStyle(AppTheme.primaryText)
                 .lineLimit(1)
 
             HStack(spacing: AppTheme.paddingS) {
@@ -191,6 +281,10 @@ struct MeetingRow: View {
             }
         }
         .padding(.vertical, AppTheme.paddingXS)
+        .contentShape(Rectangle())
+        .onHover { hovering in
+            isHovered = hovering
+        }
     }
 
     private var formattedDate: String {

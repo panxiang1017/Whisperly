@@ -6,24 +6,53 @@ struct PaywallView: View {
 
     @Environment(StoreManager.self) private var store
     @Environment(\.dismiss) private var dismiss
+    @State private var heroGlow: Double = 0.4
+    @State private var buttonHovered = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: AppTheme.paddingL) {
                 // Hero
                 VStack(spacing: AppTheme.paddingM) {
-                    Image(systemName: "waveform.badge.mic")
-                        .font(.system(size: 64))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [AppTheme.proGradientStart, AppTheme.proGradientEnd],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
+                    ZStack {
+                        // Glow background
+                        Circle()
+                            .fill(
+                                RadialGradient(
+                                    colors: [
+                                        AppTheme.accentTeal.opacity(heroGlow * 0.2),
+                                        AppTheme.accentPurple.opacity(heroGlow * 0.1),
+                                        Color.clear,
+                                    ],
+                                    center: .center,
+                                    startRadius: 10,
+                                    endRadius: 100
+                                )
                             )
-                        )
+                            .frame(width: 200, height: 200)
+
+                        // Shield + waveform
+                        ZStack {
+                            Image(systemName: "shield.lefthalf.filled")
+                                .font(.system(size: 64, weight: .thin))
+                                .foregroundStyle(AppTheme.tealPurpleGradient)
+
+                            Image(systemName: "waveform")
+                                .font(.system(size: 24, weight: .medium))
+                                .foregroundStyle(AppTheme.accentTeal)
+                                .offset(x: 2, y: 2)
+                        }
+                        .shadow(color: AppTheme.accentTeal.opacity(0.3), radius: 20)
+                    }
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
+                            heroGlow = 1.0
+                        }
+                    }
 
                     Text(String(localized: "Whisperly Pro"))
                         .font(AppTheme.largeTitleFont)
+                        .foregroundStyle(AppTheme.tealPurpleGradient)
 
                     Text(String(localized: "Unlock unlimited recording time"))
                         .font(AppTheme.bodyFont)
@@ -56,7 +85,7 @@ struct PaywallView: View {
                     )
                 }
                 .padding(AppTheme.paddingL)
-                .cardStyle()
+                .glassCard()
                 .padding(.horizontal, AppTheme.paddingM)
 
                 // Price + Purchase button
@@ -64,6 +93,7 @@ struct PaywallView: View {
                     if let product = store.product {
                         Text(product.displayPrice)
                             .font(AppTheme.largeTitleFont)
+                            .foregroundStyle(AppTheme.primaryText)
 
                         Text(String(localized: "One-time purchase. Forever."))
                             .font(AppTheme.captionFont)
@@ -78,20 +108,26 @@ struct PaywallView: View {
                             }
                         } label: {
                             Text(String(localized: "Purchase"))
-                                .font(AppTheme.headlineFont)
+                                .font(.system(.headline, design: .default, weight: .bold))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, AppTheme.paddingM)
                                 .background(
-                                    LinearGradient(
-                                        colors: [AppTheme.proGradientStart, AppTheme.proGradientEnd],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
+                                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous)
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [AppTheme.proGradientStart, AppTheme.proGradientEnd],
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                        )
+                                        .brightness(buttonHovered ? 0.1 : 0)
                                 )
                                 .foregroundStyle(.white)
                                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous))
                         }
+                        .buttonStyle(.plain)
                         .disabled(store.isLoading)
+                        .onHover { hovering in buttonHovered = hovering }
                         .padding(.horizontal, AppTheme.paddingL)
                     } else if store.isLoading {
                         ProgressView()
@@ -103,7 +139,7 @@ struct PaywallView: View {
                     } label: {
                         Text(String(localized: "Restore Purchases"))
                             .font(AppTheme.captionFont)
-                            .foregroundStyle(AppTheme.accent)
+                            .foregroundStyle(AppTheme.accentTeal)
                     }
 
                     if let error = store.purchaseError {
@@ -120,15 +156,24 @@ struct PaywallView: View {
                     if let url = Self.privacyPolicyURL {
                         Link(String(localized: "Privacy Policy"), destination: url)
                             .font(AppTheme.captionFont)
+                            .foregroundStyle(AppTheme.inactiveText)
                     }
                     if let url = Self.termsOfUseURL {
                         Link(String(localized: "Terms of Use"), destination: url)
                             .font(AppTheme.captionFont)
+                            .foregroundStyle(AppTheme.inactiveText)
                     }
                 }
                 .padding(.bottom, AppTheme.paddingL)
             }
         }
+        .background(
+            LinearGradient(
+                colors: [AppTheme.appBackground, AppTheme.windowBackground],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
         .navigationTitle(String(localized: "Go Pro"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -136,6 +181,7 @@ struct PaywallView: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button(String(localized: "Close")) { dismiss() }
+                    .foregroundStyle(AppTheme.secondaryText)
             }
         }
     }
@@ -152,12 +198,14 @@ struct FeatureRow: View {
         HStack(spacing: AppTheme.paddingM) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(AppTheme.accent)
+                .foregroundStyle(AppTheme.accentTeal)
+                .shadow(color: AppTheme.accentTeal.opacity(0.4), radius: 6)
                 .frame(width: 32)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(AppTheme.headlineFont)
+                    .foregroundStyle(AppTheme.primaryText)
                 Text(subtitle)
                     .font(AppTheme.captionFont)
                     .foregroundStyle(AppTheme.secondaryText)

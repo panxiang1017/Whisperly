@@ -15,12 +15,13 @@ struct SettingsView: View {
             Section {
                 if store.isPro {
                     Label(String(localized: "Whisperly Pro"), systemImage: "checkmark.seal.fill")
-                        .foregroundStyle(AppTheme.accent)
+                        .foregroundStyle(AppTheme.accentTeal)
                 } else {
                     Button {
                         showPaywall = true
                     } label: {
                         Label(String(localized: "Upgrade to Pro"), systemImage: "star.fill")
+                            .foregroundStyle(AppTheme.accentTeal)
                     }
 
                     Button {
@@ -59,6 +60,7 @@ struct SettingsView: View {
                             .foregroundStyle(AppTheme.secondaryText)
                     }
                 }
+                .tint(AppTheme.accentTeal)
             } header: {
                 Text(String(localized: "Sync"))
             }
@@ -76,6 +78,7 @@ struct SettingsView: View {
                             .foregroundStyle(AppTheme.secondaryText)
                     }
                 }
+                .tint(AppTheme.accentTeal)
             } header: {
                 Text(String(localized: "Audio Capture"))
             }
@@ -103,6 +106,8 @@ struct SettingsView: View {
                 Text(String(localized: "About"))
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(AppTheme.windowBackground)
         .navigationTitle(String(localized: "Settings"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -193,6 +198,7 @@ struct MLXModelManagementSection: View {
             case .downloading(let progress):
                 HStack {
                     ProgressView(value: progress, total: 1.0)
+                        .tint(AppTheme.accentTeal)
                     Text("\(Int(progress * 100))%")
                         .font(AppTheme.captionFont)
                         .monospacedDigit()

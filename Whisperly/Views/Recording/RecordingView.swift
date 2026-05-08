@@ -40,42 +40,31 @@ struct RecordingView: View {
 
             // Pipeline processing indicator
             if viewModel.isProcessing, let stage = viewModel.pipelineStage {
-                VStack(spacing: AppTheme.paddingS) {
-                    ProgressView()
-                    Text(stageDescription(stage))
-                        .font(AppTheme.captionFont)
-                        .foregroundStyle(AppTheme.secondaryText)
-                }
-                .transition(.opacity)
+                PipelineStageIndicator(stage: stage)
+                    .transition(.opacity)
             }
 
             // Stop button
             if viewModel.isRecording {
-                Button {
+                RecordingStopButton {
                     Task {
                         if let meeting = await viewModel.stopRecording() {
                             onMeetingSaved?(meeting)
                             dismiss()
                         }
                     }
-                } label: {
-                    ZStack {
-                        Circle()
-                            .fill(AppTheme.recording)
-                            .frame(width: AppTheme.recordButtonSize, height: AppTheme.recordButtonSize)
-
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(.white)
-                            .frame(width: 28, height: 28)
-                    }
                 }
-                .accessibilityLabel(String(localized: "Stop recording"))
             }
 
+            // Privacy hint
+            PrivacyHintCard()
+                .padding(.horizontal, AppTheme.paddingM)
+
             Spacer()
-                .frame(height: AppTheme.paddingXL)
+                .frame(height: AppTheme.paddingM)
         }
         .padding()
+        .background(AppTheme.appBackground)
         .navigationTitle(String(localized: "Recording"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -86,6 +75,7 @@ struct RecordingView: View {
                     Button(String(localized: "Cancel")) {
                         dismiss()
                     }
+                    .foregroundStyle(AppTheme.secondaryText)
                 }
             }
         }
@@ -109,8 +99,33 @@ struct RecordingView: View {
             }
         }
     }
+}
 
-    private func stageDescription(_ stage: PipelineStage) -> String {
+// MARK: - Pipeline Stage Indicator
+
+struct PipelineStageIndicator: View {
+    let stage: PipelineStage
+    @State private var glowPulse = false
+
+    var body: some View {
+        HStack(spacing: AppTheme.paddingS) {
+            Circle()
+                .fill(AppTheme.accentTeal)
+                .frame(width: 8, height: 8)
+                .shadow(color: AppTheme.accentTeal.opacity(glowPulse ? 0.8 : 0.3), radius: glowPulse ? 8 : 4)
+
+            Text(stageDescription)
+                .font(AppTheme.captionFont)
+                .foregroundStyle(AppTheme.secondaryText)
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
+                glowPulse = true
+            }
+        }
+    }
+
+    private var stageDescription: String {
         switch stage {
         case .transcribing: String(localized: "Transcribing audio...")
         case .diarizing: String(localized: "Identifying speakers...")
@@ -118,6 +133,73 @@ struct RecordingView: View {
         case .saving: String(localized: "Saving meeting...")
         case .completed: String(localized: "Done!")
         }
+    }
+}
+
+// MARK: - Recording Stop Button
+
+struct RecordingStopButton: View {
+    let action: () -> Void
+    @State private var pulseRing = false
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                // Pulse ring
+                Circle()
+                    .strokeBorder(AppTheme.recording.opacity(pulseRing ? 0.0 : 0.4), lineWidth: 2)
+                    .frame(width: AppTheme.recordButtonSize + 16, height: AppTheme.recordButtonSize + 16)
+                    .scaleEffect(pulseRing ? 1.3 : 1.0)
+
+                // Glow ring
+                Circle()
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [AppTheme.accentTeal.opacity(0.4), AppTheme.accentPurple.opacity(0.4)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 2
+                    )
+                    .frame(width: AppTheme.recordButtonSize + 8, height: AppTheme.recordButtonSize + 8)
+
+                // Red fill
+                Circle()
+                    .fill(AppTheme.recording)
+                    .frame(width: AppTheme.recordButtonSize, height: AppTheme.recordButtonSize)
+
+                // Stop square
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(.white)
+                    .frame(width: 26, height: 26)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(String(localized: "Stop recording"))
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false)) {
+                pulseRing = true
+            }
+        }
+    }
+}
+
+// MARK: - Privacy Hint Card
+
+struct PrivacyHintCard: View {
+    var body: some View {
+        HStack(spacing: AppTheme.paddingS) {
+            Image(systemName: "shield.lefthalf.filled")
+                .font(.body)
+                .foregroundStyle(AppTheme.accentTeal)
+
+            Text(String(localized: "On-device processing — your data never leaves this Mac"))
+                .font(AppTheme.captionFont)
+                .foregroundStyle(AppTheme.secondaryText)
+        }
+        .padding(.horizontal, AppTheme.paddingM)
+        .padding(.vertical, AppTheme.paddingS)
+        .glassCard()
     }
 }
 
@@ -141,6 +223,7 @@ struct AudioLevelView: View {
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
                         .fill(barColor(for: normalizedIndex))
                         .frame(height: barHeight)
+                        .shadow(color: barGlow(for: normalizedIndex), radius: 6)
                 }
             }
             .frame(maxHeight: .infinity, alignment: .center)
@@ -157,9 +240,21 @@ struct AudioLevelView: View {
     private func barColor(for position: Float) -> Color {
         if level > 0.7 {
             return AppTheme.destructive
-        } else if level > 0.4 {
-            return AppTheme.accent
         }
-        return AppTheme.accent.opacity(0.6)
+        // Gradient from teal to purple based on position
+        let teal = AppTheme.accentTeal
+        let purple = AppTheme.accentPurple
+        return position < 0.5
+            ? teal.opacity(Double(1.0 - position))
+            : purple.opacity(Double(position))
+    }
+
+    private func barGlow(for position: Float) -> Color {
+        if level > 0.7 {
+            return AppTheme.destructive.opacity(0.4)
+        }
+        return position < 0.5
+            ? AppTheme.accentTeal.opacity(0.5)
+            : AppTheme.accentPurple.opacity(0.5)
     }
 }

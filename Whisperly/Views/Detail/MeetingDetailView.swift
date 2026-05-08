@@ -11,14 +11,10 @@ struct MeetingDetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Picker(String(localized: "View"), selection: $selectedTab) {
-                ForEach(DetailTab.allCases) { tab in
-                    Text(tab.label).tag(tab)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, AppTheme.paddingM)
-            .padding(.vertical, AppTheme.paddingS)
+            // Custom segmented picker
+            DetailTabPicker(selectedTab: $selectedTab)
+                .padding(.horizontal, AppTheme.paddingM)
+                .padding(.vertical, AppTheme.paddingS)
 
             switch selectedTab {
             case .transcript:
@@ -29,6 +25,7 @@ struct MeetingDetailView: View {
                 speakersView
             }
         }
+        .background(AppTheme.contentBackground)
         .navigationTitle(meeting.title.isEmpty ? String(localized: "Meeting Details") : meeting.title)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -48,7 +45,7 @@ struct MeetingDetailView: View {
 
     private var transcriptView: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: AppTheme.paddingS) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 if meeting.segments.isEmpty {
                     EmptyStateView(
                         systemImage: "text.quote",
@@ -59,6 +56,13 @@ struct MeetingDetailView: View {
                     let sortedSegments = meeting.segments.sorted { $0.startTime < $1.startTime }
                     ForEach(sortedSegments, id: \.id) { segment in
                         SegmentRow(segment: segment, speakers: meeting.speakers)
+
+                        // Subtle divider between segments
+                        if segment.id != sortedSegments.last?.id {
+                            AppTheme.divider
+                                .frame(height: 1)
+                                .padding(.leading, AppTheme.paddingL)
+                        }
                     }
                 }
             }
@@ -106,7 +110,10 @@ struct MeetingDetailView: View {
                     ) {
                         Text(meeting.summary)
                             .font(AppTheme.bodyFont)
+                            .foregroundStyle(AppTheme.primaryText)
                     }
+                    .padding(AppTheme.paddingM)
+                    .glassCard()
                 }
 
                 if !meeting.keyPoints.isEmpty {
@@ -115,10 +122,18 @@ struct MeetingDetailView: View {
                         systemImage: "list.bullet"
                     ) {
                         ForEach(meeting.keyPoints, id: \.self) { point in
-                            Label(point, systemImage: "checkmark.circle.fill")
-                                .font(AppTheme.bodyFont)
+                            Label {
+                                Text(point)
+                                    .font(AppTheme.bodyFont)
+                                    .foregroundStyle(AppTheme.primaryText)
+                            } icon: {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(AppTheme.accentTeal)
+                            }
                         }
                     }
+                    .padding(AppTheme.paddingM)
+                    .glassCard()
                 }
 
                 if !meeting.actionItems.isEmpty {
@@ -140,6 +155,8 @@ struct MeetingDetailView: View {
                             )
                         }
                     }
+                    .padding(AppTheme.paddingM)
+                    .glassCard()
                 }
 
                 if meeting.summary.isEmpty && meeting.keyPoints.isEmpty && meeting.actionItems.isEmpty {
@@ -179,6 +196,7 @@ struct MeetingDetailView: View {
 
                             Text(speaker.label)
                                 .font(AppTheme.headlineFont)
+                                .foregroundStyle(AppTheme.primaryText)
 
                             Spacer()
 
@@ -257,6 +275,51 @@ enum DetailTab: String, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - Custom Tab Picker
+
+struct DetailTabPicker: View {
+    @Binding var selectedTab: DetailTab
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(DetailTab.allCases) { tab in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        selectedTab = tab
+                    }
+                } label: {
+                    Text(tab.label)
+                        .font(AppTheme.captionFont)
+                        .foregroundStyle(selectedTab == tab ? AppTheme.primaryText : AppTheme.secondaryText)
+                        .padding(.horizontal, AppTheme.paddingM)
+                        .padding(.vertical, AppTheme.paddingS)
+                        .background(
+                            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusS, style: .continuous)
+                                .fill(selectedTab == tab ? AppTheme.cardBackground : Color.clear)
+                                .shadow(
+                                    color: selectedTab == tab ? AppTheme.accentTeal.opacity(0.15) : .clear,
+                                    radius: 8
+                                )
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusS, style: .continuous)
+                                .strokeBorder(
+                                    selectedTab == tab ? AppTheme.accentTeal.opacity(0.3) : Color.clear,
+                                    lineWidth: 1
+                                )
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusM, style: .continuous)
+                .fill(AppTheme.appBackground.opacity(0.5))
+        )
+    }
+}
+
 // MARK: - Action Item Row
 
 struct ActionItemRow: View {
@@ -268,7 +331,7 @@ struct ActionItemRow: View {
         Button(action: onToggle) {
             HStack(alignment: .top, spacing: AppTheme.paddingS) {
                 Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isCompleted ? .green : AppTheme.secondaryText)
+                    .foregroundStyle(isCompleted ? AppTheme.accentTeal : AppTheme.secondaryText)
                     .font(.title3)
 
                 Text(item)
@@ -296,9 +359,15 @@ struct EngineBadge: View {
         }
         .padding(.horizontal, AppTheme.paddingS)
         .padding(.vertical, AppTheme.paddingXS)
-        .background(badgeColor.opacity(0.15))
+        .background(
+            Capsule()
+                .fill(badgeColor.opacity(0.15))
+                .overlay(
+                    Capsule()
+                        .strokeBorder(badgeColor.opacity(0.2), lineWidth: 1)
+                )
+        )
         .foregroundStyle(badgeColor)
-        .clipShape(Capsule())
     }
 
     private var displayName: String {
@@ -330,9 +399,9 @@ struct EngineBadge: View {
     private var badgeColor: Color {
         switch engine {
         case SummarizationEngineType.appleFoundationModels.rawValue:
-            .blue
+            AppTheme.accentTeal
         case SummarizationEngineType.mlx.rawValue:
-            .purple
+            AppTheme.accentPurple
         case SummarizationEngineType.extractive.rawValue:
             .orange
         default:
@@ -356,18 +425,25 @@ struct SegmentRow: View {
                     Text(speaker.label)
                         .font(AppTheme.captionFont)
                         .fontWeight(.semibold)
-                        .foregroundStyle(Color(hex: speaker.colorHex))
+                        .foregroundStyle(speakerColor(for: speaker))
                 }
 
                 Text(formatTimestamp(segment.startTime))
-                    .font(AppTheme.captionFont)
-                    .foregroundStyle(AppTheme.secondaryText)
+                    .font(AppTheme.timestampFont)
+                    .foregroundStyle(AppTheme.inactiveText)
             }
 
             Text(segment.text)
                 .font(AppTheme.bodyFont)
+                .foregroundStyle(AppTheme.primaryText)
         }
-        .padding(.vertical, AppTheme.paddingXS)
+        .padding(.vertical, AppTheme.paddingS)
+    }
+
+    private func speakerColor(for speaker: Speaker) -> Color {
+        // Alternate between teal and purple for speakers
+        let index = speakers.firstIndex(where: { $0.id == speaker.id }) ?? 0
+        return index % 2 == 0 ? AppTheme.speakerTeal : AppTheme.speakerPurple
     }
 
     private func formatTimestamp(_ time: TimeInterval) -> String {
@@ -386,6 +462,7 @@ struct SummarySection<Content: View>: View {
         VStack(alignment: .leading, spacing: AppTheme.paddingS) {
             Label(title, systemImage: systemImage)
                 .font(AppTheme.titleFont)
+                .foregroundStyle(AppTheme.primaryText)
 
             content
         }
