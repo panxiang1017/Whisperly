@@ -17,7 +17,7 @@ final class AppDependencies {
 
     init(
         recorder: any RecordingServiceProtocol = AVAudioEngineRecordingService(),
-        transcriptionService: (any TranscriptionServiceProtocol)? = nil,
+        transcriptionService: any TranscriptionServiceProtocol = SpeechAnalyzerTranscriptionService(),
         diarizationService: any DiarizationServiceProtocol = FluidAudioDiarizationService(),
         summarizationService: any SummarizationServiceProtocol = SummarizationEngine(),
         repository: any MeetingRepositoryProtocol,
@@ -30,7 +30,6 @@ final class AppDependencies {
         self.recorder = recorder
         self.modelManager = modelManager
         self.transcriptionService = transcriptionService
-            ?? WhisperKitTranscriptionService(modelManager: modelManager)
         self.diarizationService = diarizationService
         self.summarizationService = summarizationService
         self.repository = repository
@@ -52,8 +51,7 @@ final class AppDependencies {
         return RecordingViewModel(
             recorder: recorder,
             entitlementProvider: storeManager,
-            pipeline: pipeline,
-            modelManager: modelManager
+            pipeline: pipeline
         )
     }
 }

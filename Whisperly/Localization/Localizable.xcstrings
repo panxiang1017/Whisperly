@@ -1,375 +1,8 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Whisperly" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Whisperly"
-          }
-        }
-      }
-    },
-    "No meetings yet" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "还没有会议记录"
-          }
-        }
-      }
-    },
-    "Tap the record button to start your first meeting." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "点击录音按钮开始你的第一次会议。"
-          }
-        }
-      }
-    },
-    "Record" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "录音"
-          }
-        }
-      }
-    },
-    "Settings" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "设置"
-          }
-        }
-      }
-    },
-    "Recording" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "录音中"
-          }
-        }
-      }
-    },
-    "Free recording limit" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "免费录音限制"
-          }
-        }
-      }
-    },
-    "Stop recording" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "停止录音"
-          }
-        }
-      }
-    },
-    "Cancel" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "取消"
-          }
-        }
-      }
-    },
-    "Error" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "错误"
-          }
-        }
-      }
-    },
-    "OK" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "好"
-          }
-        }
-      }
-    },
-    "Transcribing audio..." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在转录音频..."
-          }
-        }
-      }
-    },
-    "Identifying speakers..." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在识别说话人..."
-          }
-        }
-      }
-    },
-    "Generating summary..." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在生成摘要..."
-          }
-        }
-      }
-    },
-    "Saving meeting..." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在保存会议..."
-          }
-        }
-      }
-    },
-    "Done!" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "完成！"
-          }
-        }
-      }
-    },
-    "Untitled Meeting" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未命名会议"
-          }
-        }
-      }
-    },
-    "Meeting Details" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "会议详情"
-          }
-        }
-      }
-    },
-    "Transcript" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "转录文本"
-          }
-        }
-      }
-    },
-    "Summary" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "摘要"
-          }
-        }
-      }
-    },
-    "Speakers" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "说话人"
-          }
-        }
-      }
-    },
-    "View" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "查看"
-          }
-        }
-      }
-    },
-    "No transcript" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暂无转录文本"
-          }
-        }
-      }
-    },
-    "The transcript will appear here after processing." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "处理完成后转录文本将显示在这里。"
-          }
-        }
-      }
-    },
-    "Key Points" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关键要点"
-          }
-        }
-      }
-    },
-    "Action Items" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "待办事项"
-          }
-        }
-      }
-    },
-    "No summary" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暂无摘要"
-          }
-        }
-      }
-    },
-    "The AI summary will appear here after processing." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AI 摘要将在处理完成后显示在这里。"
-          }
-        }
-      }
-    },
-    "No speakers identified" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未识别到说话人"
-          }
-        }
-      }
-    },
-    "Speaker information will appear here after processing." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "处理完成后说话人信息将显示在这里。"
-          }
-        }
-      }
-    },
-    "Meeting notes from Whisperly" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "来自 Whisperly 的会议记录"
-          }
-        }
-      }
-    },
-    "Whisperly Pro" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Whisperly 专业版"
-          }
-        }
-      }
-    },
-    "Unlock unlimited recording time" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "解锁无限录音时长"
-          }
-        }
-      }
-    },
-    "Unlimited recording" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无限录音"
-          }
-        }
-      }
-    },
-    "No time limits on your meetings" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "会议没有时间限制"
-          }
-        }
-      }
-    },
-    "All future updates" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "所有未来更新"
-          }
-        }
-      }
-    },
-    "New features included forever" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "永久包含新功能"
-          }
-        }
-      }
+    "%@%%" : {
+
     },
     "100% on-device" : {
       "localizations" : {
@@ -377,216 +10,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "100% 本地处理"
-          }
-        }
-      }
-    },
-    "Your data never leaves your device" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "数据绝不离开你的设备"
-          }
-        }
-      }
-    },
-    "One-time purchase" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一次性购买"
-          }
-        }
-      }
-    },
-    "No subscription, no recurring fees" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无订阅，无重复收费"
-          }
-        }
-      }
-    },
-    "One-time purchase. Forever." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一次购买，终身使用。"
-          }
-        }
-      }
-    },
-    "Purchase" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "购买"
-          }
-        }
-      }
-    },
-    "Restore Purchases" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "恢复购买"
-          }
-        }
-      }
-    },
-    "Go Pro" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "升级专业版"
-          }
-        }
-      }
-    },
-    "Close" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关闭"
-          }
-        }
-      }
-    },
-    "Privacy Policy" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "隐私政策"
-          }
-        }
-      }
-    },
-    "Terms of Use" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "使用条款"
-          }
-        }
-      }
-    },
-    "Subscription" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "订阅"
-          }
-        }
-      }
-    },
-    "Upgrade to Pro" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "升级到专业版"
-          }
-        }
-      }
-    },
-    "About" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关于"
-          }
-        }
-      }
-    },
-    "Version" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "版本"
-          }
-        }
-      }
-    },
-    "Date" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "日期"
-          }
-        }
-      }
-    },
-    "Duration" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "时长"
-          }
-        }
-      }
-    },
-    "Unknown" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未知"
-          }
-        }
-      }
-    },
-    "Markdown" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Markdown"
-          }
-        }
-      }
-    },
-    "Plain Text" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "纯文本"
-          }
-        }
-      }
-    },
-    "No audio file was produced." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未生成音频文件。"
-          }
-        }
-      }
-    },
-    "Failed to start the audio engine." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "启动音频引擎失败。"
           }
         }
       }
@@ -601,52 +24,32 @@
         }
       }
     },
-    "No recording is in progress." : {
+    "About" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "没有正在进行的录音。"
+            "value" : "关于"
           }
         }
       }
     },
-    "Microphone access was denied." : {
+    "Action Items" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "麦克风访问被拒绝。"
+            "value" : "待办事项"
           }
         }
       }
     },
-    "Unable to load product. Please check your connection." : {
+    "All future updates" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "无法加载产品，请检查网络连接。"
-          }
-        }
-      }
-    },
-    "Product not available. Please try again later." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "产品暂不可用，请稍后再试。"
-          }
-        }
-      }
-    },
-    "Purchase is pending approval." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "购买正在等待审批。"
+            "value" : "所有未来更新"
           }
         }
       }
@@ -661,12 +64,613 @@
         }
       }
     },
+    "Cancel" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        }
+      }
+    },
+    "Date" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日期"
+          }
+        }
+      }
+    },
+    "Done!" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成！"
+          }
+        }
+      }
+    },
+    "Duration" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "时长"
+          }
+        }
+      }
+    },
+    "Error" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "错误"
+          }
+        }
+      }
+    },
+    "Failed to start the audio engine." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启动音频引擎失败。"
+          }
+        }
+      }
+    },
+    "Free recording limit" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费录音限制"
+          }
+        }
+      }
+    },
+    "Generating summary..." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在生成摘要..."
+          }
+        }
+      }
+    },
+    "Go Pro" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "升级专业版"
+          }
+        }
+      }
+    },
+    "Identifying speakers..." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在识别说话人..."
+          }
+        }
+      }
+    },
+    "Key Points" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关键要点"
+          }
+        }
+      }
+    },
+    "Markdown" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Markdown"
+          }
+        }
+      }
+    },
+    "Meeting Details" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会议详情"
+          }
+        }
+      }
+    },
+    "Meeting notes from Whisperly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "来自 Whisperly 的会议记录"
+          }
+        }
+      }
+    },
+    "Microphone access was denied." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "麦克风访问被拒绝。"
+          }
+        }
+      }
+    },
+    "New features included forever" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "永久包含新功能"
+          }
+        }
+      }
+    },
+    "No audio file was produced." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未生成音频文件。"
+          }
+        }
+      }
+    },
+    "No meetings yet" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有会议记录"
+          }
+        }
+      }
+    },
+    "No recording is in progress." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有正在进行的录音。"
+          }
+        }
+      }
+    },
+    "No speakers identified" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未识别到说话人"
+          }
+        }
+      }
+    },
+    "No subscription, no recurring fees" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无订阅，无重复收费"
+          }
+        }
+      }
+    },
+    "No summary" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无摘要"
+          }
+        }
+      }
+    },
+    "No time limits on your meetings" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会议没有时间限制"
+          }
+        }
+      }
+    },
+    "No transcript" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无转录文本"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "好"
+          }
+        }
+      }
+    },
+    "One-time purchase" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一次性购买"
+          }
+        }
+      }
+    },
+    "One-time purchase. Forever." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一次购买，终身使用。"
+          }
+        }
+      }
+    },
+    "Plain Text" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "纯文本"
+          }
+        }
+      }
+    },
+    "Privacy Policy" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐私政策"
+          }
+        }
+      }
+    },
+    "Product not available. Please try again later." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "产品暂不可用，请稍后再试。"
+          }
+        }
+      }
+    },
+    "Purchase" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买"
+          }
+        }
+      }
+    },
+    "Purchase is pending approval." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买正在等待审批。"
+          }
+        }
+      }
+    },
+    "Record" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "录音"
+          }
+        }
+      }
+    },
+    "Recording" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "录音中"
+          }
+        }
+      }
+    },
+    "Restore Purchases" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复购买"
+          }
+        }
+      }
+    },
+    "Saving meeting..." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在保存会议..."
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置"
+          }
+        }
+      }
+    },
+    "Speaker information will appear here after processing." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "处理完成后说话人信息将显示在这里。"
+          }
+        }
+      }
+    },
+    "Speakers" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说话人"
+          }
+        }
+      }
+    },
+    "Stop recording" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止录音"
+          }
+        }
+      }
+    },
+    "Subscription" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "订阅"
+          }
+        }
+      }
+    },
+    "Summary" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "摘要"
+          }
+        }
+      }
+    },
+    "Tap the record button to start your first meeting." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击录音按钮开始你的第一次会议。"
+          }
+        }
+      }
+    },
+    "Terms of Use" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用条款"
+          }
+        }
+      }
+    },
+    "The AI summary will appear here after processing." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 摘要将在处理完成后显示在这里。"
+          }
+        }
+      }
+    },
+    "The transcript will appear here after processing." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "处理完成后转录文本将显示在这里。"
+          }
+        }
+      }
+    },
+    "Transcribing audio..." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在转录音频..."
+          }
+        }
+      }
+    },
+    "Transcript" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转录文本"
+          }
+        }
+      }
+    },
+    "Unable to load product. Please check your connection." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法加载产品，请检查网络连接。"
+          }
+        }
+      }
+    },
     "Unable to restore purchases. Please try again." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "无法恢复购买，请重试。"
+          }
+        }
+      }
+    },
+    "Unknown" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未知"
+          }
+        }
+      }
+    },
+    "Unlimited recording" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无限录音"
+          }
+        }
+      }
+    },
+    "Unlock unlimited recording time" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁无限录音时长"
+          }
+        }
+      }
+    },
+    "Untitled Meeting" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未命名会议"
+          }
+        }
+      }
+    },
+    "Upgrade to Pro" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "升级到专业版"
+          }
+        }
+      }
+    },
+    "Version" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本"
+          }
+        }
+      }
+    },
+    "View" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看"
+          }
+        }
+      }
+    },
+    "Whisperly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Whisperly"
+          }
+        }
+      }
+    },
+    "Whisperly Pro" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Whisperly 专业版"
+          }
+        }
+      }
+    },
+    "Your data never leaves your device" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据绝不离开你的设备"
           }
         }
       }

@@ -81,9 +81,6 @@ struct SettingsView: View {
             }
             #endif
 
-            // Model management
-            ModelManagementSection(modelManager: modelManager)
-
             // MLX model management
             MLXModelManagementSection(modelManager: modelManager)
 

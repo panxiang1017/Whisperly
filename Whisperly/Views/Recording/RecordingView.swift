@@ -108,22 +108,6 @@ struct RecordingView: View {
                 Text(error.localizedDescription)
             }
         }
-        .sheet(isPresented: Binding(
-            get: { viewModel.needsModelDownload },
-            set: { viewModel.needsModelDownload = $0 }
-        )) {
-            NavigationStack {
-                ModelDownloadView(modelManager: viewModel.modelManager)
-            }
-            #if os(macOS)
-            .frame(minWidth: 400, minHeight: 500)
-            #endif
-        }
-        .onChange(of: viewModel.modelManager.isReady) { _, isReady in
-            if isReady && viewModel.needsModelDownload {
-                viewModel.onModelReady()
-            }
-        }
     }
 
     private func stageDescription(_ stage: PipelineStage) -> String {
