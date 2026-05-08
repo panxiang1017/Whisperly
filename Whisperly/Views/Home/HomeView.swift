@@ -66,7 +66,6 @@ struct HomeView: View {
                     .background(AppTheme.backgroundGradient)
             }
         }
-        .background(AppTheme.backgroundGradient)
         .sheet(isPresented: $showRecording) {
             NavigationStack {
                 RecordingView(
