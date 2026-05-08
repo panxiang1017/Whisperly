@@ -116,7 +116,7 @@ struct HomeView: View {
                 meetingList
             }
         }
-        .background(AppTheme.backgroundGradient)
+        .background(AppTheme.sidebarBackground)
     }
 
     // MARK: - Subviews
@@ -133,10 +133,16 @@ struct HomeView: View {
                                       ? AppTheme.accentTeal.opacity(0.08)
                                       : Color.clear)
                             if selectedMeeting?.id == meeting.id {
+                                // Teal left border with glow
                                 RoundedRectangle(cornerRadius: 1)
                                     .fill(AppTheme.accentTeal)
-                                    .frame(width: 2)
+                                    .frame(width: 3)
                                     .padding(.vertical, 4)
+                                    .shadow(color: AppTheme.accentTeal.opacity(0.5), radius: 6, x: 0, y: 0)
+
+                                // Subtle teal border around selected row
+                                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusS, style: .continuous)
+                                    .strokeBorder(AppTheme.accentTeal.opacity(0.12), lineWidth: 0.5)
                             }
                         }
                     )
@@ -332,11 +338,9 @@ struct MeetingRow: View {
         VStack(alignment: .leading, spacing: AppTheme.paddingXS + 2) {
             // Title with privacy badge
             HStack(spacing: 6) {
-                if meeting.createdAt.timeIntervalSinceNow > -86400 {
-                    Image(systemName: "shield.checkmark")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(AppTheme.accentTeal.opacity(0.7))
-                }
+                Image(systemName: "shield.checkmark")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(AppTheme.accentTeal.opacity(0.7))
                 Text(meeting.title.isEmpty ? String(localized: "Untitled Meeting") : meeting.title)
                     .font(AppTheme.headlineFont)
                     .foregroundStyle(AppTheme.primaryText)

@@ -196,7 +196,7 @@ struct FeatureRow: View {
                     .frame(width: 40, height: 40)
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AppTheme.accentTeal)
             }
 
             VStack(alignment: .leading, spacing: 2) {

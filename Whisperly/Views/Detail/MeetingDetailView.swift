@@ -45,7 +45,7 @@ struct MeetingDetailView: View {
 
     private var transcriptView: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: AppTheme.paddingM) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 if meeting.segments.isEmpty {
                     EmptyStateView(
                         systemImage: "text.quote",
@@ -54,14 +54,28 @@ struct MeetingDetailView: View {
                     )
                 } else {
                     let sortedSegments = meeting.segments.sorted { $0.startTime < $1.startTime }
-                    ForEach(sortedSegments, id: \.id) { segment in
-                        SegmentRow(segment: segment, speakers: meeting.speakers)
-                            .padding(AppTheme.paddingM)
-                            .premiumGlassCard(cornerRadius: AppTheme.cornerRadiusS)
+                    ForEach(Array(sortedSegments.enumerated()), id: \.element.id) { index, segment in
+                        let prevSpeaker = index > 0 ? sortedSegments[index - 1].speakerID : nil
+                        let showSpeaker = segment.speakerID != prevSpeaker
+
+                        SegmentRow(
+                            segment: segment,
+                            speakers: meeting.speakers,
+                            showSpeakerLabel: showSpeaker
+                        )
+                        .padding(.horizontal, AppTheme.paddingM)
+                        .padding(.vertical, AppTheme.paddingS)
+
+                        if index < sortedSegments.count - 1 {
+                            Rectangle()
+                                .fill(AppTheme.divider)
+                                .frame(height: 0.5)
+                                .padding(.horizontal, AppTheme.paddingM)
+                        }
                     }
                 }
             }
-            .padding(AppTheme.paddingM)
+            .padding(.vertical, AppTheme.paddingM)
         }
     }
 
@@ -446,30 +460,40 @@ struct EngineBadge: View {
 struct SegmentRow: View {
     let segment: TranscriptSegment
     let speakers: [Speaker]
+    var showSpeakerLabel: Bool = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.paddingXS) {
-            HStack {
-                if let speakerID = segment.speakerID,
-                   let speaker = speakers.first(where: { $0.id == speakerID })
-                {
-                    // Speaker capsule badge
-                    Text(speaker.label)
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(speakerColor(for: speaker))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(
-                            Capsule()
-                                .fill(speakerColor(for: speaker).opacity(0.12))
-                        )
+            if showSpeakerLabel {
+                HStack {
+                    if let speakerID = segment.speakerID,
+                       let speaker = speakers.first(where: { $0.id == speakerID })
+                    {
+                        // Speaker capsule badge
+                        Text(speaker.label)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(speakerColor(for: speaker))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(
+                                Capsule()
+                                    .fill(speakerColor(for: speaker).opacity(0.12))
+                            )
+                    }
+
+                    Spacer()
+
+                    Text(formatTimestamp(segment.startTime))
+                        .font(AppTheme.timestampFont)
+                        .foregroundStyle(AppTheme.inactiveText)
                 }
-
-                Spacer()
-
-                Text(formatTimestamp(segment.startTime))
-                    .font(AppTheme.timestampFont)
-                    .foregroundStyle(AppTheme.inactiveText)
+            } else {
+                HStack {
+                    Spacer()
+                    Text(formatTimestamp(segment.startTime))
+                        .font(AppTheme.timestampFont)
+                        .foregroundStyle(AppTheme.inactiveText)
+                }
             }
 
             Text(segment.text)

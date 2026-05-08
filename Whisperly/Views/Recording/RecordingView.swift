@@ -22,15 +22,17 @@ struct RecordingView: View {
             VStack(spacing: AppTheme.paddingL) {
                 Spacer()
 
-                // Circular waveform visualizer
-                CircularWaveformView(level: viewModel.audioLevel)
-                    .frame(width: 220, height: 220)
+                // Circular waveform visualizer with centered time
+                ZStack {
+                    CircularWaveformView(level: viewModel.audioLevel)
+                        .frame(width: 220, height: 220)
 
-                // Elapsed time
-                Text(viewModel.formattedElapsed)
-                    .font(.system(size: 56, weight: .thin, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundStyle(Color.white.opacity(0.9))
+                    // Elapsed time centered inside the ring
+                    Text(viewModel.formattedElapsed)
+                        .font(.system(size: 56, weight: .thin, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(AppTheme.primaryText)
+                }
 
                 // Free tier progress bar
                 if viewModel.showCountdown {
@@ -124,6 +126,26 @@ struct CircularWaveformView: View {
                 let normalizedLevel = CGFloat(max(0.05, min(1.0, level)))
                 let amplitude = normalizedLevel * baseRadius * 0.3
 
+                // Breathing glow halo (always visible, pulses with breathe state)
+                let haloRect = CGRect(
+                    x: center.x - baseRadius - 20,
+                    y: center.y - baseRadius - 20,
+                    width: (baseRadius + 20) * 2,
+                    height: (baseRadius + 20) * 2
+                )
+                context.fill(
+                    Circle().path(in: haloRect),
+                    with: .radialGradient(
+                        Gradient(colors: [
+                            Color(red: 0.0, green: 0.898, blue: 0.8).opacity(breathe * 0.08),
+                            Color.clear
+                        ]),
+                        center: center,
+                        startRadius: baseRadius * 0.5,
+                        endRadius: baseRadius + 20
+                    )
+                )
+
                 // Outer glow ring
                 let glowPath = wavyCirclePath(
                     center: center,
@@ -134,7 +156,7 @@ struct CircularWaveformView: View {
                 )
                 context.stroke(
                     glowPath,
-                    with: .color(Color(red: 0.0, green: 0.898, blue: 0.8).opacity(0.15)),
+                    with: .color(Color(red: 0.0, green: 0.898, blue: 0.8).opacity(0.15 + breathe * 0.05)),
                     lineWidth: 10
                 )
 
@@ -174,17 +196,7 @@ struct CircularWaveformView: View {
                     lineWidth: 1
                 )
 
-                // Center dot
-                let dotRect = CGRect(
-                    x: center.x - 3,
-                    y: center.y - 3,
-                    width: 6,
-                    height: 6
-                )
-                context.fill(
-                    Circle().path(in: dotRect),
-                    with: .color(Color(red: 0.0, green: 0.898, blue: 0.8).opacity(0.5))
-                )
+                // Center area left clear for time overlay
             }
         }
         .onAppear {
